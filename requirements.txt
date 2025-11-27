@@ -122,3 +122,7 @@ webencodings==0.5.1
 websockets==15.0.1
 xlrd==2.0.2
 yfinance==0.2.66
+streamlit==1.40.0
+pandas==2.1.0
+plotly==5.18.0
+openpyxl==3.11.0
