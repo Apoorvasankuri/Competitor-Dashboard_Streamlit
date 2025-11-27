@@ -1,249 +1,430 @@
-# Competitor-Dashboard_Streamlit
-Python code for competitor dashboard hosted on streamlit
 # app.py
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from datetime import datetime, date
+from datetime import datetime
 
 # Page configuration
 st.set_page_config(
-    page_title="Interactive Data Dashboard",
+    page_title="Competitor Intelligence Dashboard",
     page_icon="📊",
     layout="wide"
 )
 
-# Title and description
-st.title("📊 Interactive Data Dashboard")
-st.markdown("Upload an Excel file to explore your data with dynamic filters and visualizations")
+# Custom CSS to match the desired design
+st.markdown("""
+<style>
+    /* Main theme colors */
+    :root {
+        --color-cream-50: #fcfcf9;
+        --color-teal-500: #21808d;
+        --color-teal-400: #2da6b2;
+        --color-red-400: #ff5459;
+    }
+    
+    /* Hide Streamlit branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    
+    /* Background */
+    .stApp {
+        background-color: #fcfcf9;
+    }
+    
+    /* Header styling */
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 0;
+        border-bottom: 1px solid rgba(94, 82, 64, 0.2);
+        margin-bottom: 32px;
+    }
+    
+    /* KPI Cards */
+    .kpi-card {
+        background: linear-gradient(135deg, #fffffe 0%, rgba(33, 128, 141, 0.08) 100%);
+        border: 1px solid rgba(94, 82, 64, 0.12);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        transition: all 0.3s ease;
+    }
+    
+    .kpi-card:hover {
+        border-color: #21808d;
+        box-shadow: 0 4px 12px rgba(33, 128, 141, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    .kpi-label {
+        font-size: 12px;
+        color: #626c71;
+        text-transform: uppercase;
+        font-weight: 600;
+        margin-bottom: 8px;
+        letter-spacing: 0.5px;
+    }
+    
+    .kpi-value {
+        font-size: 32px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #21808d, #2da6b2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 8px;
+    }
+    
+    .kpi-subtext {
+        font-size: 12px;
+        color: #626c71;
+    }
+    
+    /* Filter section */
+    .stSelectbox, .stTextInput {
+        background-color: white;
+    }
+    
+    /* Table styling */
+    .dataframe {
+        font-size: 13px;
+    }
+    
+    /* Badge styling */
+    .badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+        background: linear-gradient(135deg, rgba(33, 128, 141, 0.2), rgba(50, 184, 198, 0.1));
+        color: #21808d;
+        border: 1px solid rgba(33, 128, 141, 0.3);
+    }
+    
+    .badge-competitor {
+        background: linear-gradient(135deg, rgba(255, 84, 89, 0.2), rgba(168, 75, 47, 0.1));
+        color: #ff5459;
+        border: 1px solid rgba(255, 84, 89, 0.3);
+    }
+    
+    /* Chart containers */
+    .chart-container {
+        background: linear-gradient(135deg, #fffffe 0%, rgba(50, 184, 198, 0.05) 100%);
+        border: 1px solid rgba(94, 82, 64, 0.12);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+    
+    /* Status indicator */
+    .sync-status {
+        display: inline-block;
+        padding: 8px 16px;
+        background-color: rgba(33, 128, 141, 0.1);
+        color: #21808d;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    
+    .sync-indicator {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #21808d;
+        animation: pulse 2s infinite;
+        margin-right: 8px;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+</style>
+""", unsafe_allow_html=True)
 
-# File uploader widget
-uploaded_file = st.file_uploader("Choose an Excel file (.xlsx)", type=['xlsx'])
+# Initialize session state
+if 'raw_data' not in st.session_state:
+    st.session_state.raw_data = None
+if 'filtered_data' not in st.session_state:
+    st.session_state.filtered_data = None
 
+# Header
+col1, col2 = st.columns([3, 1])
+with col1:
+    st.markdown("# 📊 Competitor Intelligence Dashboard")
+with col2:
+    uploaded_file = st.file_uploader("📁 Upload Excel", type=['xlsx', 'xls'], label_visibility="collapsed")
+    if st.session_state.raw_data is not None:
+        st.markdown('<div class="sync-status"><span class="sync-indicator"></span>Live - Data Synced</div>', unsafe_allow_html=True)
+
+# Process uploaded file
 if uploaded_file is not None:
     try:
-        # Read the Excel file into a pandas DataFrame
         df = pd.read_excel(uploaded_file)
         
-        # Store original dataframe for reference
-        if 'original_df' not in st.session_state:
-            st.session_state.original_df = df.copy()
-        
-        st.success(f"✅ File uploaded successfully! Loaded {len(df)} rows and {len(df.columns)} columns.")
-        
-        # Sidebar for filters
-        st.sidebar.header("🔍 Filters")
-        
-        # Initialize filtered dataframe
-        filtered_df = df.copy()
-        
-        # Create filters for each column based on data type
-        for column in df.columns:
-            st.sidebar.markdown(f"**{column}**")
+        # Process data
+        processed_data = []
+        for _, row in df.iterrows():
+            sbu_list = str(row.get('SBU', '')).split(',') if pd.notna(row.get('SBU')) else []
+            sbu_list = [s.strip() for s in sbu_list if s.strip()]
             
-            # Determine column data type and create appropriate filter
+            comp_list = str(row.get('Competitor', '')).split(',') if pd.notna(row.get('Competitor')) else []
+            comp_list = [c.strip() for c in comp_list if c.strip()]
             
-            # Check if column is numeric (int or float)
-            if pd.api.types.is_numeric_dtype(df[column]):
-                # Get min and max values
-                min_val = float(df[column].min())
-                max_val = float(df[column].max())
-                
-                # Only create slider if min != max
-                if min_val != max_val:
-                    # Create slider for numeric columns
-                    selected_range = st.sidebar.slider(
-                        f"Range",
-                        min_value=min_val,
-                        max_value=max_val,
-                        value=(min_val, max_val),
-                        key=f"slider_{column}"
-                    )
-                    # Filter data based on slider selection
-                    filtered_df = filtered_df[
-                        (filtered_df[column] >= selected_range[0]) & 
-                        (filtered_df[column] <= selected_range[1])
-                    ]
-                else:
-                    st.sidebar.info(f"Single value: {min_val}")
-            
-            # Check if column is datetime
-            elif pd.api.types.is_datetime64_any_dtype(df[column]):
-                # Get min and max dates
-                min_date = df[column].min()
-                max_date = df[column].max()
-                
-                if pd.notna(min_date) and pd.notna(max_date) and min_date != max_date:
-                    # Create date range selector
-                    selected_date_range = st.sidebar.date_input(
-                        f"Date Range",
-                        value=(min_date.date(), max_date.date()),
-                        min_value=min_date.date(),
-                        max_value=max_date.date(),
-                        key=f"date_{column}"
-                    )
-                    # Filter data based on date selection
-                    if len(selected_date_range) == 2:
-                        start_date, end_date = selected_date_range
-                        filtered_df = filtered_df[
-                            (filtered_df[column].dt.date >= start_date) & 
-                            (filtered_df[column].dt.date <= end_date)
-                        ]
-            
-            # Categorical columns (string or object type with limited unique values)
-            else:
-                unique_values = df[column].dropna().unique()
-                
-                # Use multiselect if reasonable number of unique values (< 50)
-                if len(unique_values) <= 50:
-                    selected_values = st.sidebar.multiselect(
-                        f"Select values",
-                        options=sorted(unique_values.astype(str)),
-                        default=sorted(unique_values.astype(str)),
-                        key=f"multiselect_{column}"
-                    )
-                    # Filter data based on multiselect selection
-                    if selected_values:
-                        filtered_df = filtered_df[filtered_df[column].astype(str).isin(selected_values)]
-                else:
-                    st.sidebar.info(f"Too many unique values ({len(unique_values)})")
-            
-            st.sidebar.markdown("---")
+            processed_data.append({
+                'keyword': str(row.get('keyword', '')).strip(),
+                'newstitle': str(row.get('newstitle', 'No title'))[:200],
+                'sbu_list': sbu_list,
+                'competitor_list': comp_list,
+                'publishedate': pd.to_datetime(row.get('publishedate', datetime.now())),
+                'source': str(row.get('source', 'Unknown')).strip()
+            })
         
-        # Display filtered data count
-        st.subheader(f"📋 Filtered Data ({len(filtered_df)} rows)")
-        
-        # Display filtered dataframe
-        st.dataframe(filtered_df, use_container_width=True)
-        
-        # Download button for filtered data
-        csv = filtered_df.to_csv(index=False).encode('utf-8')
-        st.download_button(
-            label="⬇️ Download Filtered Data (CSV)",
-            data=csv,
-            file_name="filtered_data.csv",
-            mime="text/csv"
-        )
-        
-        # Visualizations section
-        st.subheader("📈 Visualizations")
-        
-        # Create two columns for charts
-        col1, col2 = st.columns(2)
-        
-        # Find numeric and categorical columns for visualization
-        numeric_cols = filtered_df.select_dtypes(include=['number']).columns.tolist()
-        categorical_cols = filtered_df.select_dtypes(include=['object', 'category']).columns.tolist()
-        
-        # Chart 1: Bar chart for categorical data
-        if categorical_cols and len(filtered_df) > 0:
-            with col1:
-                st.markdown("#### Distribution by Category")
-                # Select first categorical column
-                cat_col = categorical_cols[0]
-                
-                # Count occurrences of each category
-                category_counts = filtered_df[cat_col].value_counts().reset_index()
-                category_counts.columns = [cat_col, 'Count']
-                
-                # Create bar chart
-                fig_bar = px.bar(
-                    category_counts.head(10),  # Show top 10 categories
-                    x=cat_col,
-                    y='Count',
-                    title=f"Top 10 {cat_col} Distribution",
-                    color='Count',
-                    color_continuous_scale='Blues'
-                )
-                fig_bar.update_layout(showlegend=False)
-                st.plotly_chart(fig_bar, use_container_width=True)
-        
-        # Chart 2: Line or scatter chart for numeric data
-        if len(numeric_cols) >= 2 and len(filtered_df) > 0:
-            with col2:
-                st.markdown("#### Numeric Relationship")
-                # Select first two numeric columns
-                x_col = numeric_cols[0]
-                y_col = numeric_cols[1]
-                
-                # Create scatter plot
-                fig_scatter = px.scatter(
-                    filtered_df,
-                    x=x_col,
-                    y=y_col,
-                    title=f"{y_col} vs {x_col}",
-                    color=categorical_cols[0] if categorical_cols else None,
-                    trendline="ols" if len(filtered_df) > 2 else None
-                )
-                st.plotly_chart(fig_scatter, use_container_width=True)
-        
-        elif len(numeric_cols) >= 1 and len(filtered_df) > 0:
-            with col2:
-                st.markdown("#### Numeric Distribution")
-                # Create histogram for single numeric column
-                num_col = numeric_cols[0]
-                
-                fig_hist = px.histogram(
-                    filtered_df,
-                    x=num_col,
-                    title=f"Distribution of {num_col}",
-                    nbins=30,
-                    color_discrete_sequence=['#1f77b4']
-                )
-                st.plotly_chart(fig_hist, use_container_width=True)
-        
-        # Additional chart: Time series if datetime column exists
-        datetime_cols = filtered_df.select_dtypes(include=['datetime64']).columns.tolist()
-        
-        if datetime_cols and numeric_cols and len(filtered_df) > 0:
-            st.markdown("#### Time Series Analysis")
-            date_col = datetime_cols[0]
-            value_col = numeric_cols[0]
-            
-            # Sort by date
-            time_series_df = filtered_df.sort_values(by=date_col)
-            
-            # Create line chart
-            fig_line = px.line(
-                time_series_df,
-                x=date_col,
-                y=value_col,
-                title=f"{value_col} Over Time",
-                markers=True
-            )
-            st.plotly_chart(fig_line, use_container_width=True)
-        
-        # Summary statistics
-        if numeric_cols:
-            st.subheader("📊 Summary Statistics")
-            st.dataframe(filtered_df[numeric_cols].describe(), use_container_width=True)
+        st.session_state.raw_data = pd.DataFrame(processed_data)
+        st.session_state.filtered_data = st.session_state.raw_data.copy()
         
     except Exception as e:
-        st.error(f"❌ Error reading file: {str(e)}")
-        st.info("Please ensure the file is a valid Excel (.xlsx) file.")
+        st.error(f"Error loading file: {str(e)}")
+
+# Main dashboard
+if st.session_state.raw_data is not None:
+    df = st.session_state.raw_data
+    
+    # Filters section
+    st.markdown("---")
+    filter_cols = st.columns(5)
+    
+    with filter_cols[0]:
+        # Get unique SBUs
+        all_sbus = set()
+        for sbu_list in df['sbu_list']:
+            all_sbus.update(sbu_list)
+        sbu_filter = st.selectbox("SBU", ["All SBUs"] + sorted(list(all_sbus)))
+    
+    with filter_cols[1]:
+        # Get unique competitors
+        all_competitors = set()
+        for comp_list in df['competitor_list']:
+            all_competitors.update(comp_list)
+        competitor_filter = st.selectbox("Competitor", ["All Competitors"] + sorted(list(all_competitors)))
+    
+    with filter_cols[2]:
+        keyword_filter = st.text_input("Keyword", placeholder="Search keywords...")
+    
+    with filter_cols[3]:
+        all_sources = df['source'].unique().tolist()
+        source_filter = st.selectbox("Source", ["All Sources"] + sorted(all_sources))
+    
+    with filter_cols[4]:
+        st.write("")
+        st.write("")
+        if st.button("Reset Filters", use_container_width=True):
+            st.rerun()
+    
+    # Apply filters
+    filtered_df = df.copy()
+    
+    if sbu_filter != "All SBUs":
+        filtered_df = filtered_df[filtered_df['sbu_list'].apply(lambda x: sbu_filter in x)]
+    
+    if competitor_filter != "All Competitors":
+        filtered_df = filtered_df[filtered_df['competitor_list'].apply(lambda x: competitor_filter in x)]
+    
+    if keyword_filter:
+        filtered_df = filtered_df[filtered_df['keyword'].str.contains(keyword_filter, case=False, na=False)]
+    
+    if source_filter != "All Sources":
+        filtered_df = filtered_df[filtered_df['source'] == source_filter]
+    
+    st.session_state.filtered_data = filtered_df
+    
+    # KPI Cards
+    st.markdown("---")
+    kpi_cols = st.columns(4)
+    
+    with kpi_cols[0]:
+        total_articles = len(filtered_df)
+        if len(filtered_df) > 0:
+            min_date = filtered_df['publishedate'].min().strftime('%m/%d/%Y')
+            max_date = filtered_df['publishedate'].max().strftime('%m/%d/%Y')
+            date_range = f"{min_date} to {max_date}"
+        else:
+            date_range = "No data"
+        
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">Total Articles</div>
+            <div class="kpi-value">{total_articles:,}</div>
+            <div class="kpi-subtext">{date_range}</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with kpi_cols[1]:
+        unique_keywords = filtered_df['keyword'].nunique()
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">Unique Keywords</div>
+            <div class="kpi-value">{unique_keywords}</div>
+            <div class="kpi-subtext">Keywords tracked</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with kpi_cols[2]:
+        all_comps = set()
+        for comp_list in filtered_df['competitor_list']:
+            all_comps.update(comp_list)
+        competitors_mentioned = len(all_comps)
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">Competitors Mentioned</div>
+            <div class="kpi-value">{competitors_mentioned}</div>
+            <div class="kpi-subtext">Active in period</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with kpi_cols[3]:
+        news_sources = filtered_df['source'].nunique()
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">News Sources</div>
+            <div class="kpi-value">{news_sources}</div>
+            <div class="kpi-subtext">Media channels</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Recent Articles Table
+    st.markdown("---")
+    st.markdown("### 📰 Recent Articles")
+    
+    if len(filtered_df) > 0:
+        display_df = filtered_df.head(50).copy()
+        display_df['SBU'] = display_df['sbu_list'].apply(lambda x: x[0] if len(x) > 0 else 'N/A')
+        display_df['Competitor'] = display_df['competitor_list'].apply(lambda x: x[0] if len(x) > 0 else 'N/A')
+        display_df['Date'] = display_df['publishedate'].dt.strftime('%m/%d/%Y')
+        
+        table_df = display_df[['newstitle', 'keyword', 'SBU', 'Competitor', 'source', 'Date']]
+        table_df.columns = ['Title', 'Keyword', 'SBU', 'Competitor', 'Source', 'Date']
+        
+        st.dataframe(table_df, use_container_width=True, height=400)
+    else:
+        st.info("No articles match your filters")
+    
+    # Charts
+    st.markdown("---")
+    chart_cols = st.columns(2)
+    
+    with chart_cols[0]:
+        st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+        st.markdown("#### 📅 Articles by Date")
+        
+        if len(filtered_df) > 0:
+            date_counts = filtered_df.groupby(filtered_df['publishedate'].dt.date).size().reset_index()
+            date_counts.columns = ['Date', 'Count']
+            date_counts = date_counts.sort_values('Date')
+            
+            fig_date = px.line(date_counts, x='Date', y='Count', 
+                              markers=True,
+                              color_discrete_sequence=['#21808d'])
+            fig_date.update_traces(fill='tozeroy', fillcolor='rgba(33, 128, 141, 0.1)')
+            fig_date.update_layout(
+                showlegend=False,
+                height=300,
+                margin=dict(l=0, r=0, t=0, b=0),
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)'
+            )
+            st.plotly_chart(fig_date, use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    with chart_cols[1]:
+        st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+        st.markdown("#### 🔑 Top Keywords")
+        
+        if len(filtered_df) > 0:
+            keyword_counts = filtered_df['keyword'].value_counts().head(10).reset_index()
+            keyword_counts.columns = ['Keyword', 'Count']
+            
+            fig_keywords = px.bar(keyword_counts, y='Keyword', x='Count',
+                                 orientation='h',
+                                 color_discrete_sequence=['#21808d'])
+            fig_keywords.update_layout(
+                showlegend=False,
+                height=300,
+                margin=dict(l=0, r=0, t=0, b=0),
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                yaxis={'categoryorder': 'total ascending'}
+            )
+            st.plotly_chart(fig_keywords, use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    chart_cols2 = st.columns(2)
+    
+    with chart_cols2[0]:
+        st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+        st.markdown("#### 🏢 Articles by SBU")
+        
+        if len(filtered_df) > 0:
+            sbu_counts = {}
+            for sbu_list in filtered_df['sbu_list']:
+                for sbu in sbu_list:
+                    sbu_counts[sbu] = sbu_counts.get(sbu, 0) + 1
+            
+            if sbu_counts:
+                sbu_df = pd.DataFrame(list(sbu_counts.items()), columns=['SBU', 'Count'])
+                
+                fig_sbu = px.pie(sbu_df, values='Count', names='SBU',
+                                color_discrete_sequence=['#21808d', '#32b8c6', '#1d7480', '#2da6b2', '#a84b2f', '#ff5459', '#5e5240'])
+                fig_sbu.update_layout(
+                    height=300,
+                    margin=dict(l=0, r=0, t=0, b=0),
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    paper_bgcolor='rgba(0,0,0,0)'
+                )
+                st.plotly_chart(fig_sbu, use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    with chart_cols2[1]:
+        st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+        st.markdown("#### 👥 Top Competitors Mentioned")
+        
+        if len(filtered_df) > 0:
+            comp_counts = {}
+            for comp_list in filtered_df['competitor_list']:
+                for comp in comp_list:
+                    comp_counts[comp] = comp_counts.get(comp, 0) + 1
+            
+            if comp_counts:
+                comp_df = pd.DataFrame(list(comp_counts.items()), columns=['Competitor', 'Count'])
+                comp_df = comp_df.sort_values('Count', ascending=False).head(10)
+                
+                fig_comp = px.bar(comp_df, y='Competitor', x='Count',
+                                 orientation='h',
+                                 color_discrete_sequence=['#ff5459'])
+                fig_comp.update_layout(
+                    showlegend=False,
+                    height=300,
+                    margin=dict(l=0, r=0, t=0, b=0),
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    yaxis={'categoryorder': 'total ascending'}
+                )
+                st.plotly_chart(fig_comp, use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
 else:
-    # Display instructions when no file is uploaded
     st.info("👆 Upload an Excel file to get started")
     st.markdown("""
-    ### How to use this dashboard:
-    1. **Upload** your Excel file using the file uploader above
-    2. **Filter** your data using the controls in the left sidebar
-    3. **Explore** the filtered data and visualizations that update automatically
-    4. **Download** the filtered data as a CSV file
-    
-    ### Supported features:
-    - 🔢 Numeric columns: Range sliders
-    - 📅 Date columns: Date range selectors
-    - 📝 Categorical columns: Multi-select dropdowns
-    - 📊 Dynamic charts that update with filters
-    - ⬇️ Export filtered data
+    ### Expected Excel Format:
+    Your Excel file should contain these columns:
+    - **keyword**: The search keyword or topic
+    - **newstitle**: Article title
+    - **SBU**: Strategic Business Unit (comma-separated if multiple)
+    - **Competitor**: Competitor names (comma-separated if multiple)
+    - **publishedate**: Publication date
+    - **source**: News source/publication
     """)
-```
-```
-# requirements.txt
-streamlit==1.31.0
-pandas==2.2.0
-openpyxl==3.1.2
-plotly==5.18.0
