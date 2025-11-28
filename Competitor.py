@@ -399,11 +399,12 @@ if st.session_state.raw_data is not None:
         """, unsafe_allow_html=True)
     
     # Recent Articles Table
+        # Recent Articles Table
     st.markdown("<br><br>", unsafe_allow_html=True)
     st.markdown("### 📰 Recent Articles")
     
-    if len(filtered_df) > 0:
-        display_df = filtered_df.head(50).copy()
+    if len(st.session_state.filtered_data) > 0:
+        display_df = st.session_state.filtered_data.head(50).copy()
         display_df['SBU'] = display_df['sbu_list'].apply(lambda x: x[0] if len(x) > 0 else 'N/A')
         display_df['Competitor'] = display_df['competitor_list'].apply(lambda x: x[0] if len(x) > 0 else 'N/A')
         display_df['Date'] = display_df['publishedate'].dt.strftime('%m/%d/%Y')
