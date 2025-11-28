@@ -548,7 +548,7 @@ else:
 st.markdown("<br><br>", unsafe_allow_html=True)
 st.markdown("---")
 st.markdown('<div class="upload-container">', unsafe_allow_html=True)
-#st.markdown('<h4>📁 Upload Competitor Data</h4>', unsafe_allow_html=True)
+st.markdown('<h4>📁 Upload Competitor Data</h4>', unsafe_allow_html=True)
 
 uploaded_file = st.file_uploader("Browse for files", type=['xlsx', 'xls'])
 
