@@ -7,7 +7,7 @@ from datetime import datetime
 
 # Page configuration
 st.set_page_config(
-    page_title="Competitor Intelligence Dashboard",
+    page_title="KEC Competitor Intelligence Dashboard",
     page_icon="📊",
     layout="wide"
 )
@@ -17,60 +17,153 @@ st.markdown("""
 <style>
     /* Main theme colors */
     :root {
-        --color-cream-50: #fcfcf9;
-        --color-teal-500: #21808d;
-        --color-teal-400: #2da6b2;
-        --color-red-400: #ff5459;
+        --color-blue-50: #e3f2fd;
+        --color-blue-100: #bbdefb;
+        --color-blue-200: #90caf9;
+        --color-blue-300: #64b5f6;
+        --color-blue-400: #42a5f5;
+        --color-blue-500: #2196f3;
+        --color-blue-600: #1e88e5;
+        --color-blue-700: #1976d2;
+        --color-blue-800: #1565c0;
+        --color-blue-900: #0d47a1;
     }
     
     /* Hide Streamlit branding */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    /* File uploader styling - moved to bottom right */
+    .upload-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 999;
+        background: white;
+        padding: 16px;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(21, 101, 192, 0.3);
+        border: 2px solid #2196f3;
+    }
+    
+    [data-testid="stFileUploader"] {
+        width: auto;
+    }
+    
+    [data-testid="stFileUploader"] section {
+        padding: 0;
+        border: none;
+    }
+    
+    [data-testid="stFileUploader"] section > div {
+        display: none;
+    }
+    
+    [data-testid="stFileUploader"] button {
+        background: linear-gradient(135deg, #1976d2, #2196f3);
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    [data-testid="stFileUploader"] button:hover {
+        background: linear-gradient(135deg, #1565c0, #1976d2);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(25, 118, 210, 0.3);
+    }
     
     /* Background */
     .stApp {
-        background-color: #fcfcf9;
+        background: linear-gradient(to bottom, #e3f2fd 0%, #ffffff 100%);
     }
     
-    /* Header styling */
-    .dashboard-header {
+    /* Blue header band */
+    .blue-header-band {
+        background: linear-gradient(135deg, #1565c0 0%, #1976d2 50%, #2196f3 100%);
+        padding: 20px 40px;
+        margin: -80px -80px 30px -80px;
+        border-radius: 0;
+        box-shadow: 0 4px 12px rgba(21, 101, 192, 0.3);
+    }
+    
+    .header-content {
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        padding: 20px 0;
-        border-bottom: 1px solid rgba(94, 82, 64, 0.2);
-        margin-bottom: 32px;
+        justify-content: space-between;
+    }
+    
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+    
+    .logo-container {
+        background: white;
+        padding: 8px 16px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .logo-container img {
+        height: 50px;
+        width: auto;
+    }
+    
+    .header-text {
+        color: white;
+    }
+    
+    .header-title {
+        font-size: 28px;
+        font-weight: 700;
+        margin: 0;
+        color: white;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .header-caption {
+        font-size: 14px;
+        margin: 4px 0 0 0;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 400;
     }
     
     /* KPI Cards */
     .kpi-card {
-        background: linear-gradient(135deg, #fffffe 0%, rgba(33, 128, 141, 0.08) 100%);
-        border: 1px solid rgba(94, 82, 64, 0.12);
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        border: 2px solid #90caf9;
         border-radius: 12px;
         padding: 20px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.15);
         transition: all 0.3s ease;
     }
     
     .kpi-card:hover {
-        border-color: #21808d;
-        box-shadow: 0 4px 12px rgba(33, 128, 141, 0.15);
-        transform: translateY(-2px);
+        border-color: #2196f3;
+        box-shadow: 0 8px 20px rgba(33, 150, 243, 0.25);
+        transform: translateY(-4px);
     }
     
     .kpi-label {
         font-size: 12px;
-        color: #626c71;
+        color: #1565c0;
         text-transform: uppercase;
-        font-weight: 600;
+        font-weight: 700;
         margin-bottom: 8px;
         letter-spacing: 0.5px;
     }
     
     .kpi-value {
-        font-size: 32px;
-        font-weight: 700;
-        background: linear-gradient(135deg, #21808d, #2da6b2);
+        font-size: 36px;
+        font-weight: 800;
+        background: linear-gradient(135deg, #1565c0, #2196f3);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         margin-bottom: 8px;
@@ -78,7 +171,8 @@ st.markdown("""
     
     .kpi-subtext {
         font-size: 12px;
-        color: #626c71;
+        color: #1976d2;
+        font-weight: 500;
     }
     
     /* Filter section */
@@ -86,9 +180,17 @@ st.markdown("""
         background-color: white;
     }
     
-    /* Table styling */
+    /* Table styling with alternating rows */
     .dataframe {
         font-size: 13px;
+    }
+    
+    [data-testid="stDataFrame"] tbody tr:nth-child(even) {
+        background-color: #b3d9ff !important;
+    }
+    
+    [data-testid="stDataFrame"] tbody tr:nth-child(odd) {
+        background-color: white !important;
     }
     
     /* Badge styling */
@@ -98,35 +200,49 @@ st.markdown("""
         border-radius: 12px;
         font-size: 12px;
         font-weight: 500;
-        background: linear-gradient(135deg, rgba(33, 128, 141, 0.2), rgba(50, 184, 198, 0.1));
-        color: #21808d;
-        border: 1px solid rgba(33, 128, 141, 0.3);
+        background: linear-gradient(135deg, #bbdefb, #90caf9);
+        color: #1565c0;
+        border: 1px solid #64b5f6;
     }
     
     .badge-competitor {
-        background: linear-gradient(135deg, rgba(255, 84, 89, 0.2), rgba(168, 75, 47, 0.1));
-        color: #ff5459;
-        border: 1px solid rgba(255, 84, 89, 0.3);
+        background: linear-gradient(135deg, #1e88e5, #2196f3);
+        color: white;
+        border: 1px solid #1976d2;
     }
     
     /* Chart containers */
     .chart-container {
-        background: linear-gradient(135deg, #fffffe 0%, rgba(50, 184, 198, 0.05) 100%);
-        border: 1px solid rgba(94, 82, 64, 0.12);
+        background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);
+        border: 2px solid #90caf9;
         border-radius: 12px;
         padding: 20px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.15);
+        transition: all 0.3s ease;
+    }
+    
+    .chart-container:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(33, 150, 243, 0.25);
+        border-color: #2196f3;
+    }
+    
+    .chart-container h4 {
+        color: #1565c0;
+        font-weight: 700;
+        margin-bottom: 16px;
     }
     
     /* Status indicator */
     .sync-status {
         display: inline-block;
         padding: 8px 16px;
-        background-color: rgba(33, 128, 141, 0.1);
-        color: #21808d;
+        background: linear-gradient(135deg, rgba(33, 150, 243, 0.2), rgba(100, 181, 246, 0.1));
+        color: #1976d2;
         border-radius: 8px;
         font-size: 12px;
-        font-weight: 500;
+        font-weight: 600;
+        border: 2px solid #90caf9;
     }
     
     .sync-indicator {
@@ -134,14 +250,39 @@ st.markdown("""
         width: 8px;
         height: 8px;
         border-radius: 50%;
-        background-color: #21808d;
+        background: linear-gradient(135deg, #1976d2, #2196f3);
         animation: pulse 2s infinite;
         margin-right: 8px;
+        box-shadow: 0 0 8px rgba(33, 150, 243, 0.6);
     }
     
     @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.5; }
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.6; transform: scale(1.1); }
+    }
+    
+    /* Button styling */
+    .stButton > button {
+        background: linear-gradient(135deg, #1976d2, #2196f3);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 20px;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+    
+    .stButton > button:hover {
+        background: linear-gradient(135deg, #1565c0, #1976d2);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+    }
+    
+    /* Section headers */
+    h3 {
+        color: #1565c0 !important;
+        font-weight: 700 !important;
+        margin-top: 24px !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -152,14 +293,29 @@ if 'raw_data' not in st.session_state:
 if 'filtered_data' not in st.session_state:
     st.session_state.filtered_data = None
 
-# Header
-col1, col2 = st.columns([3, 1])
-with col1:
-    st.markdown("# 📊 Competitor Intelligence Dashboard")
-with col2:
-    uploaded_file = st.file_uploader("📁 Upload Excel", type=['xlsx', 'xls'], label_visibility="collapsed")
-    if st.session_state.raw_data is not None:
-        st.markdown('<div class="sync-status"><span class="sync-indicator"></span>Live - Data Synced</div>', unsafe_allow_html=True)
+# Header with blue band and logo
+st.markdown("""
+<div class="blue-header-band">
+    <div class="header-content">
+        <div class="header-left">
+            <div class="logo-container">
+                <img src="https://i.imgur.com/8YqE9Xh.png" alt="KEC Logo">
+            </div>
+            <div class="header-text">
+                <h1 class="header-title">KEC Competitor Intelligence Dashboard</h1>
+                <p class="header-caption">Competition & industry updates</p>
+            </div>
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# File uploader in bottom right corner
+st.markdown('<div class="upload-container">', unsafe_allow_html=True)
+uploaded_file = st.file_uploader("Browse for files", type=['xlsx', 'xls'])
+if st.session_state.raw_data is not None:
+    st.markdown('<div class="sync-status"><span class="sync-indicator"></span>Synced</div>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
 # Process uploaded file
 if uploaded_file is not None:
@@ -195,7 +351,7 @@ if st.session_state.raw_data is not None:
     df = st.session_state.raw_data
     
     # Filters section
-    st.markdown("---")
+    st.markdown('<div class="filter-container">', unsafe_allow_html=True)
     filter_cols = st.columns(5)
     
     with filter_cols[0]:
@@ -225,6 +381,8 @@ if st.session_state.raw_data is not None:
         if st.button("Reset Filters", use_container_width=True):
             st.rerun()
     
+    st.markdown('</div>', unsafe_allow_html=True)
+    
     # Apply filters
     filtered_df = df.copy()
     
@@ -242,8 +400,9 @@ if st.session_state.raw_data is not None:
     
     st.session_state.filtered_data = filtered_df
     
+    st.markdown("<br>", unsafe_allow_html=True)
+    
     # KPI Cards
-    st.markdown("---")
     kpi_cols = st.columns(4)
     
     with kpi_cols[0]:
@@ -297,7 +456,7 @@ if st.session_state.raw_data is not None:
         """, unsafe_allow_html=True)
     
     # Recent Articles Table
-    st.markdown("---")
+    st.markdown("<br><br>", unsafe_allow_html=True)
     st.markdown("### 📰 Recent Articles")
     
     if len(filtered_df) > 0:
@@ -306,15 +465,16 @@ if st.session_state.raw_data is not None:
         display_df['Competitor'] = display_df['competitor_list'].apply(lambda x: x[0] if len(x) > 0 else 'N/A')
         display_df['Date'] = display_df['publishedate'].dt.strftime('%m/%d/%Y')
         
-        table_df = display_df[['newstitle', 'keyword', 'SBU', 'Competitor', 'source', 'Date']]
-        table_df.columns = ['Title', 'Keyword', 'SBU', 'Competitor', 'Source', 'Date']
+        # Remove Keyword column
+        table_df = display_df[['newstitle', 'SBU', 'Competitor', 'source', 'Date']]
+        table_df.columns = ['Title', 'SBU', 'Competitor', 'Source', 'Date']
         
         st.dataframe(table_df, use_container_width=True, height=400)
     else:
         st.info("No articles match your filters")
     
     # Charts
-    st.markdown("---")
+    st.markdown("<br><br>", unsafe_allow_html=True)
     chart_cols = st.columns(2)
     
     with chart_cols[0]:
@@ -328,8 +488,8 @@ if st.session_state.raw_data is not None:
             
             fig_date = px.line(date_counts, x='Date', y='Count', 
                               markers=True,
-                              color_discrete_sequence=['#21808d'])
-            fig_date.update_traces(fill='tozeroy', fillcolor='rgba(33, 128, 141, 0.1)')
+                              color_discrete_sequence=['#1976d2'])
+            fig_date.update_traces(fill='tozeroy', fillcolor='rgba(25, 118, 210, 0.2)')
             fig_date.update_layout(
                 showlegend=False,
                 height=300,
@@ -350,7 +510,7 @@ if st.session_state.raw_data is not None:
             
             fig_keywords = px.bar(keyword_counts, y='Keyword', x='Count',
                                  orientation='h',
-                                 color_discrete_sequence=['#21808d'])
+                                 color_discrete_sequence=['#2196f3'])
             fig_keywords.update_layout(
                 showlegend=False,
                 height=300,
@@ -378,7 +538,7 @@ if st.session_state.raw_data is not None:
                 sbu_df = pd.DataFrame(list(sbu_counts.items()), columns=['SBU', 'Count'])
                 
                 fig_sbu = px.pie(sbu_df, values='Count', names='SBU',
-                                color_discrete_sequence=['#21808d', '#32b8c6', '#1d7480', '#2da6b2', '#a84b2f', '#ff5459', '#5e5240'])
+                                color_discrete_sequence=['#1976d2', '#2196f3', '#42a5f5', '#64b5f6', '#90caf9', '#bbdefb', '#1565c0'])
                 fig_sbu.update_layout(
                     height=300,
                     margin=dict(l=0, r=0, t=0, b=0),
@@ -404,7 +564,7 @@ if st.session_state.raw_data is not None:
                 
                 fig_comp = px.bar(comp_df, y='Competitor', x='Count',
                                  orientation='h',
-                                 color_discrete_sequence=['#ff5459'])
+                                 color_discrete_sequence=['#1e88e5'])
                 fig_comp.update_layout(
                     showlegend=False,
                     height=300,
@@ -417,7 +577,7 @@ if st.session_state.raw_data is not None:
         st.markdown('</div>', unsafe_allow_html=True)
 
 else:
-    st.info("👆 Upload an Excel file to get started")
+    st.info("👆 Upload an Excel file using the button in the bottom right to get started")
     st.markdown("""
     ### Expected Excel Format:
     Your Excel file should contain these columns:
