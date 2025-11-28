@@ -33,55 +33,6 @@ st.markdown("""
     footer {visibility: hidden;}
     header {visibility: hidden;}
     
-    /* File uploader styling - moved to bottom of page */
-    .upload-container {
-        margin-top: 60px;
-        margin-bottom: 40px;
-        padding: 20px;
-        background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);
-        border: 2px solid #90caf9;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.15);
-    }
-    
-    .upload-container h4 {
-        color: #1565c0;
-        font-weight: 700;
-        margin-bottom: 12px;
-        font-size: 16px;
-    }
-    
-    [data-testid="stFileUploader"] {
-        width: auto;
-    }
-    
-    [data-testid="stFileUploader"] section {
-        padding: 0;
-        border: none;
-    }
-    
-    [data-testid="stFileUploader"] section > div {
-        display: none;
-    }
-    
-    [data-testid="stFileUploader"] button {
-        background: linear-gradient(135deg, #1976d2, #2196f3);
-        color: white;
-        border: none;
-        padding: 8px 20px;
-        border-radius: 6px;
-        font-size: 13px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    
-    [data-testid="stFileUploader"] button:hover {
-        background: linear-gradient(135deg, #1565c0, #1976d2);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(25, 118, 210, 0.3);
-    }
-    
     /* Background */
     .stApp {
         background: linear-gradient(to bottom, #e3f2fd 0%, #ffffff 100%);
@@ -172,19 +123,11 @@ st.markdown("""
         background-color: white;
     }
     
-    /* Table styling with alternating rows */
+    /* Table styling */
     .dataframe {
         font-size: 13px;
     }
     
-    [data-testid="stDataFrame"] tbody tr:nth-child(even) {
-    background-color: #e3f2fd !important;  /* Powder Blue */
-}
-
-[data-testid="stDataFrame"] tbody tr:nth-child(odd) {
-    background-color: #f5f9ff !important;  /* Very Light Powder Blue */
-}
-
     /* Badge styling */
     .badge {
         display: inline-block;
@@ -201,28 +144,6 @@ st.markdown("""
         background: linear-gradient(135deg, #1e88e5, #2196f3);
         color: white;
         border: 1px solid #1976d2;
-    }
-    
-    /* Chart containers */
-    .chart-container {
-        background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);
-        border: 2px solid #90caf9;
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.15);
-        transition: all 0.3s ease;
-    }
-    
-    .chart-container:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 20px rgba(33, 150, 243, 0.25);
-        border-color: #2196f3;
-    }
-    
-    .chart-container h4 {
-        color: #1565c0;
-        font-weight: 700;
-        margin-bottom: 16px;
     }
     
     /* Status indicator */
@@ -276,6 +197,24 @@ st.markdown("""
         font-weight: 700 !important;
         margin-top: 24px !important;
     }
+    
+    [data-testid="stFileUploader"] button {
+        background: linear-gradient(135deg, #1976d2, #2196f3);
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    [data-testid="stFileUploader"] button:hover {
+        background: linear-gradient(135deg, #1565c0, #1976d2);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(25, 118, 210, 0.3);
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -298,6 +237,14 @@ st.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
+
+# Function to apply powder blue alternating row colors
+def style_alternating_rows(row):
+    """Apply alternating powder blue colors to rows"""
+    if row.name % 2 == 0:
+        return ['background-color: #e3f2fd'] * len(row)  # Powder Blue
+    else:
+        return ['background-color: #f5f9ff'] * len(row)  # Very Light Powder Blue
 
 # Main dashboard
 if st.session_state.raw_data is not None:
@@ -422,7 +369,9 @@ if st.session_state.raw_data is not None:
         table_df = display_df[['newstitle', 'SBU', 'Competitor', 'source', 'Date']]
         table_df.columns = ['Title', 'SBU', 'Competitor', 'Source', 'Date']
         
-        st.dataframe(table_df, use_container_width=True, height=400)
+        # Apply powder blue alternating row styling using Pandas Styler
+        styled_df = table_df.style.apply(style_alternating_rows, axis=1)
+        st.dataframe(styled_df, use_container_width=True, height=400)
     else:
         st.info("No articles match your filters")
     
@@ -431,9 +380,6 @@ if st.session_state.raw_data is not None:
     chart_cols = st.columns(2)
     
     with chart_cols[0]:
-        #st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-        st.markdown("#### 📅 Articles by Date")
-        
         if len(filtered_df) > 0:
             date_counts = filtered_df.groupby(filtered_df['publishedate'].dt.date).size().reset_index()
             date_counts.columns = ['Date', 'Count']
@@ -451,12 +397,8 @@ if st.session_state.raw_data is not None:
                 paper_bgcolor='rgba(0,0,0,0)'
             )
             st.plotly_chart(fig_date, use_container_width=True)
-        st.markdown('</div>', unsafe_allow_html=True)
     
     with chart_cols[1]:
-        #st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-        st.markdown("#### 🔑 Top Keywords")
-        
         if len(filtered_df) > 0:
             keyword_counts = filtered_df['keyword'].value_counts().head(10).reset_index()
             keyword_counts.columns = ['Keyword', 'Count']
@@ -473,14 +415,10 @@ if st.session_state.raw_data is not None:
                 yaxis={'categoryorder': 'total ascending'}
             )
             st.plotly_chart(fig_keywords, use_container_width=True)
-        st.markdown('</div>', unsafe_allow_html=True)
     
     chart_cols2 = st.columns(2)
     
     with chart_cols2[0]:
-        #st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-        st.markdown("#### 🏢 Articles by SBU")
-        
         if len(filtered_df) > 0:
             sbu_counts = {}
             for sbu_list in filtered_df['sbu_list']:
@@ -499,12 +437,8 @@ if st.session_state.raw_data is not None:
                     paper_bgcolor='rgba(0,0,0,0)'
                 )
                 st.plotly_chart(fig_sbu, use_container_width=True)
-        st.markdown('</div>', unsafe_allow_html=True)
     
     with chart_cols2[1]:
-        #st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-        st.markdown("#### 👥 Top Competitors Mentioned")
-        
         if len(filtered_df) > 0:
             comp_counts = {}
             for comp_list in filtered_df['competitor_list']:
@@ -527,10 +461,9 @@ if st.session_state.raw_data is not None:
                     yaxis={'categoryorder': 'total ascending'}
                 )
                 st.plotly_chart(fig_comp, use_container_width=True)
-        st.markdown('</div>', unsafe_allow_html=True)
 
 else:
-    st.info(" Upload an Excel file using the button below to get started")
+    st.info("👆 Upload an Excel file using the button below to get started")
     st.markdown("""
     ### Expected Excel Format:
     Your Excel file should contain these columns:
@@ -547,8 +480,6 @@ else:
 # ═════════════════════════════════════════════════════════════════
 st.markdown("<br><br>", unsafe_allow_html=True)
 st.markdown("---")
-#st.markdown('<div class="upload-container">', unsafe_allow_html=True)
-#st.markdown('<h4>📁 Upload Competitor Data</h4>', unsafe_allow_html=True)
 
 uploaded_file = st.file_uploader("Browse for files", type=['xlsx', 'xls'])
 
@@ -585,5 +516,3 @@ if uploaded_file is not None:
 
 if st.session_state.raw_data is not None:
     st.markdown('<div class="sync-status"><span class="sync-indicator"></span>Data Synced</div>', unsafe_allow_html=True)
-
-st.markdown('</div>', unsafe_allow_html=True)
