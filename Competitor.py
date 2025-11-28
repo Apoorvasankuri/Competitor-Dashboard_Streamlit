@@ -578,13 +578,13 @@ if st.session_state.raw_data is not None:
                 st.plotly_chart(fig_comp, use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 # File uploader at the bottom
-st.markdown("<br><br>", unsafe_allow_html=True)
-st.markdown('<div class="upload-container">', unsafe_allow_html=True)
-st.markdown('<h4>📁 Upload Competitor Data</h4>', unsafe_allow_html=True)
-uploaded_file = st.file_uploader("Browse for files", type=['xlsx', 'xls'], key="bottom_uploader")
-if st.session_state.raw_data is not None:
-    st.markdown('<div class="sync-status"><span class="sync-indicator"></span>Synced</div>', unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
+#st.markdown("<br><br>", unsafe_allow_html=True)
+#st.markdown('<div class="upload-container">', unsafe_allow_html=True)
+#st.markdown('<h4>📁 Upload Competitor Data</h4>', unsafe_allow_html=True)
+#uploaded_file = st.file_uploader("Browse for files", type=['xlsx', 'xls'], key="bottom_uploader")
+#if st.session_state.raw_data is not None:
+ #   st.markdown('<div class="sync-status"><span class="sync-indicator"></span>Synced</div>', unsafe_allow_html=True)
+#st.markdown('</div>', unsafe_allow_html=True)
 
 else:
     st.info("👆 Upload an Excel file using the button below to get started")
