@@ -313,11 +313,11 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # File uploader in bottom right corner
-st.markdown('<div class="upload-container">', unsafe_allow_html=True)
-uploaded_file = st.file_uploader("Browse for files", type=['xlsx', 'xls'])
-if st.session_state.raw_data is not None:
-    st.markdown('<div class="sync-status"><span class="sync-indicator"></span>Synced</div>', unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
+#st.markdown('<div class="upload-container">', unsafe_allow_html=True)
+#uploaded_file = st.file_uploader("Browse for files", type=['xlsx', 'xls'])
+#if st.session_state.raw_data is not None:
+#    st.markdown('<div class="sync-status"><span class="sync-indicator"></span>Synced</div>', unsafe_allow_html=True)
+#st.markdown('</div>', unsafe_allow_html=True)
 
 # Process uploaded file
 if uploaded_file is not None:
