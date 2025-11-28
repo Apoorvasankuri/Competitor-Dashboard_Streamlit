@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
+import os
 
 # Page configuration
 st.set_page_config(
@@ -237,6 +238,48 @@ st.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
+# ═════════════════════════════════════════════════════════════════
+# LOAD DEFAULT EXCEL FILE
+# ═════════════════════════════════════════════════════════════════
+def load_default_data():
+    """Load data from default Excel file stored in project"""
+    excel_file_path = "competitor_data.xlsx"  # ← CHANGE THIS TO YOUR FILENAME
+    
+    if os.path.exists(excel_file_path):
+        try:
+            df = pd.read_excel(excel_file_path)
+            
+            # Process data (same as your upload processing)
+            processed_data = []
+            for _, row in df.iterrows():
+                sbu_list = str(row.get('SBU', '')).split(',') if pd.notna(row.get('SBU')) else []
+                sbu_list = [s.strip() for s in sbu_list if s.strip()]
+                
+                comp_list = str(row.get('Competitor', '')).split(',') if pd.notna(row.get('Competitor')) else []
+                comp_list = [c.strip() for c in comp_list if c.strip()]
+                
+                processed_data.append({
+                    'keyword': str(row.get('keyword', '')).strip(),
+                    'newstitle': str(row.get('newstitle', 'No title'))[:200],
+                    'sbu_list': sbu_list,
+                    'competitor_list': comp_list,
+                    'publishedate': pd.to_datetime(row.get('publishedate', datetime.now())),
+                    'source': str(row.get('source', 'Unknown')).strip()
+                })
+            
+            return pd.DataFrame(processed_data)
+        except Exception as e:
+            st.warning(f"Could not load default file: {str(e)}")
+            return None
+    return None
+
+# Load default data on first run
+if st.session_state.raw_data is None:
+    default_data = load_default_data()
+    if default_data is not None:
+        st.session_state.raw_data = default_data
+        st.session_state.filtered_data = default_data.copy()
+
 
 # Function to apply powder blue alternating row colors
 def style_alternating_rows(row):
