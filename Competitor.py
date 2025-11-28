@@ -238,15 +238,52 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Function to apply powder blue alternating row colors
+# ═════════════════════════════════════════════════════════════════
+# FILE UPLOADER AT TOP (ALWAYS VISIBLE)
+# ═════════════════════════════════════════════════════════════════
+st.markdown("<br>", unsafe_allow_html=True)
+
+uploaded_file = st.file_uploader("Upload Excel file with competitor data", type=['xlsx', 'xls'])
+
+if uploaded_file is not None:
+    try:
+        df = pd.read_excel(uploaded_file)
+        
+        # Process data
+        processed_data = []
+        for _, row in df.iterrows():
+            sbu_list = str(row.get('SBU', '')).split(',') if pd.notna(row.get('SBU')) else []
+            sbu_list = [s.strip() for s in sbu_list if s.strip()]
+            
+            comp_list = str(row.get('Competitor', '')).split(',') if pd.notna(row.get('Competitor')) else []
+            comp_list = [c.strip() for c in comp_list if c.strip()]
+            
+            processed_data.append({
+                'keyword': str(row.get('keyword', '')).strip(),
+                'newstitle': str(row.get('newstitle', 'No title'))[:200],
+                'sbu_list': sbu_list,
+                'competitor_list': comp_list,
+                'publishedate': pd.to_datetime(row.get('publishedate', datetime.now())),
+                'source': str(row.get('source', 'Unknown')).strip()
+            })
+        
+        st.session_state.raw_data = pd.DataFrame(processed_data)
+        st.session_state.filtered_data = st.session_state.raw_data.copy()
+        
+        st.success(f"✅ File uploaded successfully! {len(processed_data)} articles loaded.")
+        
+    except Exception as e:
+        st.error(f"Error loading file: {str(e)}")
+
+# Function to apply powder blue alternating row colors (including index)
 def style_alternating_rows(row):
-    """Apply alternating powder blue colors to rows"""
+    """Apply alternating powder blue colors to rows including index"""
     if row.name % 2 == 0:
         return ['background-color: #e3f2fd'] * len(row)  # Powder Blue
     else:
         return ['background-color: #f5f9ff'] * len(row)  # Very Light Powder Blue
 
-# Main dashboard
+# Main dashboard - ONLY SHOWS IF DATA IS LOADED
 if st.session_state.raw_data is not None:
     df = st.session_state.raw_data
     
@@ -369,8 +406,17 @@ if st.session_state.raw_data is not None:
         table_df = display_df[['newstitle', 'SBU', 'Competitor', 'source', 'Date']]
         table_df.columns = ['Title', 'SBU', 'Competitor', 'Source', 'Date']
         
-        # Apply powder blue alternating row styling using Pandas Styler
-        styled_df = table_df.style.apply(style_alternating_rows, axis=1)
+        # Apply powder blue alternating row styling using Pandas Styler (includes index)
+        def style_all_including_index(row):
+            """Style all columns including the index"""
+            if row.name % 2 == 0:
+                return ['background-color: #e3f2fd'] * len(row)
+            else:
+                return ['background-color: #f5f9ff'] * len(row)
+        
+        styled_df = table_df.style.apply(style_all_including_index, axis=1)
+        styled_df.index.name = None  # Remove index name if present
+        
         st.dataframe(styled_df, use_container_width=True, height=400)
     else:
         st.info("No articles match your filters")
@@ -461,58 +507,9 @@ if st.session_state.raw_data is not None:
                     yaxis={'categoryorder': 'total ascending'}
                 )
                 st.plotly_chart(fig_comp, use_container_width=True)
-
-else:
-    st.info("Upload an Excel file using the button below to get started")
-    st.markdown("""
-    ### Expected Excel Format:
-    Your Excel file should contain these columns:
-    - **keyword**: The search keyword or topic
-    - **newstitle**: Article title
-    - **SBU**: Strategic Business Unit (comma-separated if multiple)
-    - **Competitor**: Competitor names (comma-separated if multiple)
-    - **publishedate**: Publication date
-    - **source**: News source/publication
-    """)
-
-# ═════════════════════════════════════════════════════════════════
-# FILE UPLOADER AT BOTTOM (ALWAYS VISIBLE)
-# ═════════════════════════════════════════════════════════════════
-st.markdown("<br><br>", unsafe_allow_html=True)
-st.markdown("---")
-
-uploaded_file = st.file_uploader("Browse for files", type=['xlsx', 'xls'])
-
-if uploaded_file is not None:
-    try:
-        df = pd.read_excel(uploaded_file)
-        
-        # Process data
-        processed_data = []
-        for _, row in df.iterrows():
-            sbu_list = str(row.get('SBU', '')).split(',') if pd.notna(row.get('SBU')) else []
-            sbu_list = [s.strip() for s in sbu_list if s.strip()]
-            
-            comp_list = str(row.get('Competitor', '')).split(',') if pd.notna(row.get('Competitor')) else []
-            comp_list = [c.strip() for c in comp_list if c.strip()]
-            
-            processed_data.append({
-                'keyword': str(row.get('keyword', '')).strip(),
-                'newstitle': str(row.get('newstitle', 'No title'))[:200],
-                'sbu_list': sbu_list,
-                'competitor_list': comp_list,
-                'publishedate': pd.to_datetime(row.get('publishedate', datetime.now())),
-                'source': str(row.get('source', 'Unknown')).strip()
-            })
-        
-        st.session_state.raw_data = pd.DataFrame(processed_data)
-        st.session_state.filtered_data = st.session_state.raw_data.copy()
-        
-        st.success(f"✅ File uploaded successfully! {len(processed_data)} articles loaded.")
-        st.rerun()
-        
-    except Exception as e:
-        st.error(f"Error loading file: {str(e)}")
-
-if st.session_state.raw_data is not None:
-    st.markdown('<div class="sync-status"><span class="sync-indicator"></span>Data Synced</div>', unsafe_allow_html=True)
+    
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    st.markdown("---")
+    
+    if st.session_state.raw_data is not None:
+        st.markdown('<div class="sync-status"><span class="sync-indicator"></span>Data Synced</div>', unsafe_allow_html=True)
