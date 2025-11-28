@@ -1,4 +1,3 @@
-# app.py
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -107,18 +106,6 @@ st.markdown("""
         display: flex;
         align-items: center;
         gap: 20px;
-    }
-    
-    .logo-container {
-        background: white;
-        padding: 8px 16px;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-    
-    .logo-container img {
-        height: 50px;
-        width: auto;
     }
     
     .header-text {
@@ -298,7 +285,7 @@ if 'raw_data' not in st.session_state:
 if 'filtered_data' not in st.session_state:
     st.session_state.filtered_data = None
 
-# Header with blue band and logo
+# Header WITHOUT logo
 st.markdown("""
 <div class="blue-header-band">
     <div class="header-content">
@@ -311,42 +298,6 @@ st.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
-
-# File uploader in bottom right corner
-st.markdown('<div class="upload-container">', unsafe_allow_html=True)
-uploaded_file = st.file_uploader("Browse for files", type=['xlsx', 'xls'])
-if st.session_state.raw_data is not None:
-    st.markdown('<div class="sync-status"><span class="sync-indicator"></span>Synced</div>', unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
-
-# Process uploaded file
-if uploaded_file is not None:
-    try:
-        df = pd.read_excel(uploaded_file)
-        
-        # Process data
-        processed_data = []
-        for _, row in df.iterrows():
-            sbu_list = str(row.get('SBU', '')).split(',') if pd.notna(row.get('SBU')) else []
-            sbu_list = [s.strip() for s in sbu_list if s.strip()]
-            
-            comp_list = str(row.get('Competitor', '')).split(',') if pd.notna(row.get('Competitor')) else []
-            comp_list = [c.strip() for c in comp_list if c.strip()]
-            
-            processed_data.append({
-                'keyword': str(row.get('keyword', '')).strip(),
-                'newstitle': str(row.get('newstitle', 'No title'))[:200],
-                'sbu_list': sbu_list,
-                'competitor_list': comp_list,
-                'publishedate': pd.to_datetime(row.get('publishedate', datetime.now())),
-                'source': str(row.get('source', 'Unknown')).strip()
-            })
-        
-        st.session_state.raw_data = pd.DataFrame(processed_data)
-        st.session_state.filtered_data = st.session_state.raw_data.copy()
-        
-    except Exception as e:
-        st.error(f"Error loading file: {str(e)}")
 
 # Main dashboard
 if st.session_state.raw_data is not None:
@@ -577,14 +528,6 @@ if st.session_state.raw_data is not None:
                 )
                 st.plotly_chart(fig_comp, use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
-# File uploader at the bottom
-#st.markdown("<br><br>", unsafe_allow_html=True)
-#st.markdown('<div class="upload-container">', unsafe_allow_html=True)
-#st.markdown('<h4>📁 Upload Competitor Data</h4>', unsafe_allow_html=True)
-#uploaded_file = st.file_uploader("Browse for files", type=['xlsx', 'xls'], key="bottom_uploader")
-#if st.session_state.raw_data is not None:
- #   st.markdown('<div class="sync-status"><span class="sync-indicator"></span>Synced</div>', unsafe_allow_html=True)
-#st.markdown('</div>', unsafe_allow_html=True)
 
 else:
     st.info("👆 Upload an Excel file using the button below to get started")
@@ -598,3 +541,49 @@ else:
     - **publishedate**: Publication date
     - **source**: News source/publication
     """)
+
+# ═════════════════════════════════════════════════════════════════
+# FILE UPLOADER AT BOTTOM (ALWAYS VISIBLE)
+# ═════════════════════════════════════════════════════════════════
+st.markdown("<br><br>", unsafe_allow_html=True)
+st.markdown("---")
+st.markdown('<div class="upload-container">', unsafe_allow_html=True)
+st.markdown('<h4>📁 Upload Competitor Data</h4>', unsafe_allow_html=True)
+
+uploaded_file = st.file_uploader("Browse for files", type=['xlsx', 'xls'])
+
+if uploaded_file is not None:
+    try:
+        df = pd.read_excel(uploaded_file)
+        
+        # Process data
+        processed_data = []
+        for _, row in df.iterrows():
+            sbu_list = str(row.get('SBU', '')).split(',') if pd.notna(row.get('SBU')) else []
+            sbu_list = [s.strip() for s in sbu_list if s.strip()]
+            
+            comp_list = str(row.get('Competitor', '')).split(',') if pd.notna(row.get('Competitor')) else []
+            comp_list = [c.strip() for c in comp_list if c.strip()]
+            
+            processed_data.append({
+                'keyword': str(row.get('keyword', '')).strip(),
+                'newstitle': str(row.get('newstitle', 'No title'))[:200],
+                'sbu_list': sbu_list,
+                'competitor_list': comp_list,
+                'publishedate': pd.to_datetime(row.get('publishedate', datetime.now())),
+                'source': str(row.get('source', 'Unknown')).strip()
+            })
+        
+        st.session_state.raw_data = pd.DataFrame(processed_data)
+        st.session_state.filtered_data = st.session_state.raw_data.copy()
+        
+        st.success(f"✅ File uploaded successfully! {len(processed_data)} articles loaded.")
+        st.rerun()
+        
+    except Exception as e:
+        st.error(f"Error loading file: {str(e)}")
+
+if st.session_state.raw_data is not None:
+    st.markdown('<div class="sync-status"><span class="sync-indicator"></span>Data Synced</div>', unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
