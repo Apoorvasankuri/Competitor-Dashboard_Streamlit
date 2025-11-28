@@ -1,4 +1,4 @@
-import streamlit as st
+"import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -6,13 +6,13 @@ from datetime import datetime
 
 # Page configuration
 st.set_page_config(
-    page_title="KEC Competitor Intelligence Dashboard",
-    page_icon="📊",
-    layout="wide"
+    page_title=""KEC Competitor Intelligence Dashboard"",
+    page_icon=""📊"",
+    layout=""wide""
 )
 
 # Custom CSS to match the desired design
-st.markdown("""
+st.markdown(""""""
 <style>
     /* Main theme colors */
     :root {
@@ -32,6 +32,55 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
+    
+    /* File uploader styling - moved to bottom of page */
+    .upload-container {
+        margin-top: 60px;
+        margin-bottom: 40px;
+        padding: 20px;
+        background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);
+        border: 2px solid #90caf9;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.15);
+    }
+    
+    .upload-container h4 {
+        color: #1565c0;
+        font-weight: 700;
+        margin-bottom: 12px;
+        font-size: 16px;
+    }
+    
+    [data-testid=""stFileUploader""] {
+        width: auto;
+    }
+    
+    [data-testid=""stFileUploader""] section {
+        padding: 0;
+        border: none;
+    }
+    
+    [data-testid=""stFileUploader""] section > div {
+        display: none;
+    }
+    
+    [data-testid=""stFileUploader""] button {
+        background: linear-gradient(135deg, #1976d2, #2196f3);
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    [data-testid=""stFileUploader""] button:hover {
+        background: linear-gradient(135deg, #1565c0, #1976d2);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(25, 118, 210, 0.3);
+    }
     
     /* Background */
     .stApp {
@@ -123,11 +172,19 @@ st.markdown("""
         background-color: white;
     }
     
-    /* Table styling */
+    /* Table styling with alternating rows */
     .dataframe {
         font-size: 13px;
     }
     
+    [data-testid=""stDataFrame""] tbody tr:nth-child(even) {
+    background-color: #e3f2fd !important;  /* Powder Blue */
+}
+
+[data-testid=""stDataFrame""] tbody tr:nth-child(odd) {
+    background-color: #f5f9ff !important;  /* Very Light Powder Blue */
+}
+
     /* Badge styling */
     .badge {
         display: inline-block;
@@ -144,6 +201,28 @@ st.markdown("""
         background: linear-gradient(135deg, #1e88e5, #2196f3);
         color: white;
         border: 1px solid #1976d2;
+    }
+    
+    /* Chart containers */
+    .chart-container {
+        background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);
+        border: 2px solid #90caf9;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.15);
+        transition: all 0.3s ease;
+    }
+    
+    .chart-container:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(33, 150, 243, 0.25);
+        border-color: #2196f3;
+    }
+    
+    .chart-container h4 {
+        color: #1565c0;
+        font-weight: 700;
+        margin-bottom: 16px;
     }
     
     /* Status indicator */
@@ -197,26 +276,8 @@ st.markdown("""
         font-weight: 700 !important;
         margin-top: 24px !important;
     }
-    
-    [data-testid="stFileUploader"] button {
-        background: linear-gradient(135deg, #1976d2, #2196f3);
-        color: white;
-        border: none;
-        padding: 8px 20px;
-        border-radius: 6px;
-        font-size: 13px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    
-    [data-testid="stFileUploader"] button:hover {
-        background: linear-gradient(135deg, #1565c0, #1976d2);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(25, 118, 210, 0.3);
-    }
 </style>
-""", unsafe_allow_html=True)
+"""""", unsafe_allow_html=True)
 
 # Initialize session state
 if 'raw_data' not in st.session_state:
@@ -225,23 +286,271 @@ if 'filtered_data' not in st.session_state:
     st.session_state.filtered_data = None
 
 # Header WITHOUT logo
-st.markdown("""
-<div class="blue-header-band">
-    <div class="header-content">
-        <div class="header-left">
-            <div class="header-text">
-                <h1 class="header-title">KEC Competitor Intelligence Dashboard</h1>
-                <p class="header-caption">Competition & industry updates</p>
+st.markdown(""""""
+<div class=""blue-header-band"">
+    <div class=""header-content"">
+        <div class=""header-left"">
+            <div class=""header-text"">
+                <h1 class=""header-title"">KEC Competitor Intelligence Dashboard</h1>
+                <p class=""header-caption"">Competition & industry updates</p>
             </div>
         </div>
     </div>
 </div>
-""", unsafe_allow_html=True)
+"""""", unsafe_allow_html=True)
+
+# Main dashboard
+if st.session_state.raw_data is not None:
+    df = st.session_state.raw_data
+    
+    # Filters section
+    st.markdown('<div class=""filter-container"">', unsafe_allow_html=True)
+    filter_cols = st.columns(5)
+    
+    with filter_cols[0]:
+        # Get unique SBUs
+        all_sbus = set()
+        for sbu_list in df['sbu_list']:
+            all_sbus.update(sbu_list)
+        sbu_filter = st.selectbox(""SBU"", [""All SBUs""] + sorted(list(all_sbus)))
+    
+    with filter_cols[1]:
+        # Get unique competitors
+        all_competitors = set()
+        for comp_list in df['competitor_list']:
+            all_competitors.update(comp_list)
+        competitor_filter = st.selectbox(""Competitor"", [""All Competitors""] + sorted(list(all_competitors)))
+    
+    with filter_cols[2]:
+        keyword_filter = st.text_input(""Keyword"", placeholder=""Search keywords..."")
+    
+    with filter_cols[3]:
+        all_sources = df['source'].unique().tolist()
+        source_filter = st.selectbox(""Source"", [""All Sources""] + sorted(all_sources))
+    
+    with filter_cols[4]:
+        st.write("""")
+        st.write("""")
+        if st.button(""Reset Filters"", use_container_width=True):
+            st.rerun()
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Apply filters
+    filtered_df = df.copy()
+    
+    if sbu_filter != ""All SBUs"":
+        filtered_df = filtered_df[filtered_df['sbu_list'].apply(lambda x: sbu_filter in x)]
+    
+    if competitor_filter != ""All Competitors"":
+        filtered_df = filtered_df[filtered_df['competitor_list'].apply(lambda x: competitor_filter in x)]
+    
+    if keyword_filter:
+        filtered_df = filtered_df[filtered_df['keyword'].str.contains(keyword_filter, case=False, na=False)]
+    
+    if source_filter != ""All Sources"":
+        filtered_df = filtered_df[filtered_df['source'] == source_filter]
+    
+    st.session_state.filtered_data = filtered_df
+    
+    st.markdown(""<br>"", unsafe_allow_html=True)
+    
+    # KPI Cards
+    kpi_cols = st.columns(4)
+    
+    with kpi_cols[0]:
+        total_articles = len(filtered_df)
+        if len(filtered_df) > 0:
+            min_date = filtered_df['publishedate'].min().strftime('%m/%d/%Y')
+            max_date = filtered_df['publishedate'].max().strftime('%m/%d/%Y')
+            date_range = f""{min_date} to {max_date}""
+        else:
+            date_range = ""No data""
+        
+        st.markdown(f""""""
+        <div class=""kpi-card"">
+            <div class=""kpi-label"">Total Articles</div>
+            <div class=""kpi-value"">{total_articles:,}</div>
+            <div class=""kpi-subtext"">{date_range}</div>
+        </div>
+        """""", unsafe_allow_html=True)
+    
+    with kpi_cols[1]:
+        unique_keywords = filtered_df['keyword'].nunique()
+        st.markdown(f""""""
+        <div class=""kpi-card"">
+            <div class=""kpi-label"">Unique Keywords</div>
+            <div class=""kpi-value"">{unique_keywords}</div>
+            <div class=""kpi-subtext"">Keywords tracked</div>
+        </div>
+        """""", unsafe_allow_html=True)
+    
+    with kpi_cols[2]:
+        all_comps = set()
+        for comp_list in filtered_df['competitor_list']:
+            all_comps.update(comp_list)
+        competitors_mentioned = len(all_comps)
+        st.markdown(f""""""
+        <div class=""kpi-card"">
+            <div class=""kpi-label"">Competitors Mentioned</div>
+            <div class=""kpi-value"">{competitors_mentioned}</div>
+            <div class=""kpi-subtext"">Active in period</div>
+        </div>
+        """""", unsafe_allow_html=True)
+    
+    with kpi_cols[3]:
+        news_sources = filtered_df['source'].nunique()
+        st.markdown(f""""""
+        <div class=""kpi-card"">
+            <div class=""kpi-label"">News Sources</div>
+            <div class=""kpi-value"">{news_sources}</div>
+            <div class=""kpi-subtext"">Media channels</div>
+        </div>
+        """""", unsafe_allow_html=True)
+    
+    # Recent Articles Table
+    st.markdown(""<br><br>"", unsafe_allow_html=True)
+    st.markdown(""### 📰 Recent Articles"")
+    
+    if len(filtered_df) > 0:
+        display_df = filtered_df.head(50).copy()
+        display_df['SBU'] = display_df['sbu_list'].apply(lambda x: x[0] if len(x) > 0 else 'N/A')
+        display_df['Competitor'] = display_df['competitor_list'].apply(lambda x: x[0] if len(x) > 0 else 'N/A')
+        display_df['Date'] = display_df['publishedate'].dt.strftime('%m/%d/%Y')
+        
+        # Remove Keyword column
+        table_df = display_df[['newstitle', 'SBU', 'Competitor', 'source', 'Date']]
+        table_df.columns = ['Title', 'SBU', 'Competitor', 'Source', 'Date']
+        
+        st.dataframe(table_df, use_container_width=True, height=400)
+    else:
+        st.info(""No articles match your filters"")
+    
+    # Charts
+    st.markdown(""<br><br>"", unsafe_allow_html=True)
+    chart_cols = st.columns(2)
+    
+    with chart_cols[0]:
+        #st.markdown('<div class=""chart-container"">', unsafe_allow_html=True)
+        st.markdown(""#### 📅 Articles by Date"")
+        
+        if len(filtered_df) > 0:
+            date_counts = filtered_df.groupby(filtered_df['publishedate'].dt.date).size().reset_index()
+            date_counts.columns = ['Date', 'Count']
+            date_counts = date_counts.sort_values('Date')
+            
+            fig_date = px.line(date_counts, x='Date', y='Count', 
+                              markers=True,
+                              color_discrete_sequence=['#1976d2'])
+            fig_date.update_traces(fill='tozeroy', fillcolor='rgba(25, 118, 210, 0.2)')
+            fig_date.update_layout(
+                showlegend=False,
+                height=300,
+                margin=dict(l=0, r=0, t=0, b=0),
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)'
+            )
+            st.plotly_chart(fig_date, use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    with chart_cols[1]:
+        #st.markdown('<div class=""chart-container"">', unsafe_allow_html=True)
+        st.markdown(""#### 🔑 Top Keywords"")
+        
+        if len(filtered_df) > 0:
+            keyword_counts = filtered_df['keyword'].value_counts().head(10).reset_index()
+            keyword_counts.columns = ['Keyword', 'Count']
+            
+            fig_keywords = px.bar(keyword_counts, y='Keyword', x='Count',
+                                 orientation='h',
+                                 color_discrete_sequence=['#2196f3'])
+            fig_keywords.update_layout(
+                showlegend=False,
+                height=300,
+                margin=dict(l=0, r=0, t=0, b=0),
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                yaxis={'categoryorder': 'total ascending'}
+            )
+            st.plotly_chart(fig_keywords, use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    chart_cols2 = st.columns(2)
+    
+    with chart_cols2[0]:
+        #st.markdown('<div class=""chart-container"">', unsafe_allow_html=True)
+        st.markdown(""#### 🏢 Articles by SBU"")
+        
+        if len(filtered_df) > 0:
+            sbu_counts = {}
+            for sbu_list in filtered_df['sbu_list']:
+                for sbu in sbu_list:
+                    sbu_counts[sbu] = sbu_counts.get(sbu, 0) + 1
+            
+            if sbu_counts:
+                sbu_df = pd.DataFrame(list(sbu_counts.items()), columns=['SBU', 'Count'])
+                
+                fig_sbu = px.pie(sbu_df, values='Count', names='SBU',
+                                color_discrete_sequence=['#1976d2', '#2196f3', '#42a5f5', '#64b5f6', '#90caf9', '#bbdefb', '#1565c0'])
+                fig_sbu.update_layout(
+                    height=300,
+                    margin=dict(l=0, r=0, t=0, b=0),
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    paper_bgcolor='rgba(0,0,0,0)'
+                )
+                st.plotly_chart(fig_sbu, use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    with chart_cols2[1]:
+        #st.markdown('<div class=""chart-container"">', unsafe_allow_html=True)
+        st.markdown(""#### 👥 Top Competitors Mentioned"")
+        
+        if len(filtered_df) > 0:
+            comp_counts = {}
+            for comp_list in filtered_df['competitor_list']:
+                for comp in comp_list:
+                    comp_counts[comp] = comp_counts.get(comp, 0) + 1
+            
+            if comp_counts:
+                comp_df = pd.DataFrame(list(comp_counts.items()), columns=['Competitor', 'Count'])
+                comp_df = comp_df.sort_values('Count', ascending=False).head(10)
+                
+                fig_comp = px.bar(comp_df, y='Competitor', x='Count',
+                                 orientation='h',
+                                 color_discrete_sequence=['#1e88e5'])
+                fig_comp.update_layout(
+                    showlegend=False,
+                    height=300,
+                    margin=dict(l=0, r=0, t=0, b=0),
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    yaxis={'categoryorder': 'total ascending'}
+                )
+                st.plotly_chart(fig_comp, use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+else:
+    st.info("" Upload an Excel file using the button below to get started"")
+    st.markdown(""""""
+    ### Expected Excel Format:
+    Your Excel file should contain these columns:
+    - **keyword**: The search keyword or topic
+    - **newstitle**: Article title
+    - **SBU**: Strategic Business Unit (comma-separated if multiple)
+    - **Competitor**: Competitor names (comma-separated if multiple)
+    - **publishedate**: Publication date
+    - **source**: News source/publication
+    """""")
 
 # ═════════════════════════════════════════════════════════════════
-# FILE UPLOADER - WILL BE MOVED TO BOTTOM
+# FILE UPLOADER AT BOTTOM (ALWAYS VISIBLE)
 # ═════════════════════════════════════════════════════════════════
-uploaded_file = st.file_uploader("Upload Excel file with competitor data", type=['xlsx', 'xls'], key="file_uploader_top")
+st.markdown(""<br><br>"", unsafe_allow_html=True)
+st.markdown(""---"")
+#st.markdown('<div class=""upload-container"">', unsafe_allow_html=True)
+#st.markdown('<h4>📁 Upload Competitor Data</h4>', unsafe_allow_html=True)
+
+uploaded_file = st.file_uploader(""Browse for files"", type=['xlsx', 'xls'])
 
 if uploaded_file is not None:
     try:
@@ -268,246 +577,13 @@ if uploaded_file is not None:
         st.session_state.raw_data = pd.DataFrame(processed_data)
         st.session_state.filtered_data = st.session_state.raw_data.copy()
         
-        st.success(f"✅ File uploaded successfully! {len(processed_data)} articles loaded.")
+        st.success(f""✅ File uploaded successfully! {len(processed_data)} articles loaded."")
+        st.rerun()
         
     except Exception as e:
-        st.error(f"Error loading file: {str(e)}")
+        st.error(f""Error loading file: {str(e)}"")
 
-# Function to apply powder blue alternating row colors (including index)
-def style_alternating_rows(row):
-    """Apply alternating powder blue colors to rows including index"""
-    if row.name % 2 == 0:
-        return ['background-color: #e3f2fd'] * len(row)  # Powder Blue
-    else:
-        return ['background-color: #f5f9ff'] * len(row)  # Very Light Powder Blue
-
-# Main dashboard - ONLY SHOWS IF DATA IS LOADED
 if st.session_state.raw_data is not None:
-    df = st.session_state.raw_data
-    
-    # Filters section
-    st.markdown('<div class="filter-container">', unsafe_allow_html=True)
-    filter_cols = st.columns(5)
-    
-    with filter_cols[0]:
-        # Get unique SBUs
-        all_sbus = set()
-        for sbu_list in df['sbu_list']:
-            all_sbus.update(sbu_list)
-        sbu_filter = st.selectbox("SBU", ["All SBUs"] + sorted(list(all_sbus)))
-    
-    with filter_cols[1]:
-        # Get unique competitors
-        all_competitors = set()
-        for comp_list in df['competitor_list']:
-            all_competitors.update(comp_list)
-        competitor_filter = st.selectbox("Competitor", ["All Competitors"] + sorted(list(all_competitors)))
-    
-    with filter_cols[2]:
-        keyword_filter = st.text_input("Keyword", placeholder="Search keywords...")
-    
-    with filter_cols[3]:
-        all_sources = df['source'].unique().tolist()
-        source_filter = st.selectbox("Source", ["All Sources"] + sorted(all_sources))
-    
-    with filter_cols[4]:
-        st.write("")
-        st.write("")
-        if st.button("Reset Filters", use_container_width=True):
-            st.rerun()
-    
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Apply filters
-    filtered_df = df.copy()
-    
-    if sbu_filter != "All SBUs":
-        filtered_df = filtered_df[filtered_df['sbu_list'].apply(lambda x: sbu_filter in x)]
-    
-    if competitor_filter != "All Competitors":
-        filtered_df = filtered_df[filtered_df['competitor_list'].apply(lambda x: competitor_filter in x)]
-    
-    if keyword_filter:
-        filtered_df = filtered_df[filtered_df['keyword'].str.contains(keyword_filter, case=False, na=False)]
-    
-    if source_filter != "All Sources":
-        filtered_df = filtered_df[filtered_df['source'] == source_filter]
-    
-    st.session_state.filtered_data = filtered_df
-    
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    # KPI Cards
-    kpi_cols = st.columns(4)
-    
-    with kpi_cols[0]:
-        total_articles = len(filtered_df)
-        if len(filtered_df) > 0:
-            min_date = filtered_df['publishedate'].min().strftime('%m/%d/%Y')
-            max_date = filtered_df['publishedate'].max().strftime('%m/%d/%Y')
-            date_range = f"{min_date} to {max_date}"
-        else:
-            date_range = "No data"
-        
-        st.markdown(f"""
-        <div class="kpi-card">
-            <div class="kpi-label">Total Articles</div>
-            <div class="kpi-value">{total_articles:,}</div>
-            <div class="kpi-subtext">{date_range}</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with kpi_cols[1]:
-        unique_keywords = filtered_df['keyword'].nunique()
-        st.markdown(f"""
-        <div class="kpi-card">
-            <div class="kpi-label">Unique Keywords</div>
-            <div class="kpi-value">{unique_keywords}</div>
-            <div class="kpi-subtext">Keywords tracked</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with kpi_cols[2]:
-        all_comps = set()
-        for comp_list in filtered_df['competitor_list']:
-            all_comps.update(comp_list)
-        competitors_mentioned = len(all_comps)
-        st.markdown(f"""
-        <div class="kpi-card">
-            <div class="kpi-label">Competitors Mentioned</div>
-            <div class="kpi-value">{competitors_mentioned}</div>
-            <div class="kpi-subtext">Active in period</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with kpi_cols[3]:
-        news_sources = filtered_df['source'].nunique()
-        st.markdown(f"""
-        <div class="kpi-card">
-            <div class="kpi-label">News Sources</div>
-            <div class="kpi-value">{news_sources}</div>
-            <div class="kpi-subtext">Media channels</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    # Recent Articles Table
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    st.markdown("### 📰 Recent Articles")
-    
-    if len(filtered_df) > 0:
-        display_df = filtered_df.head(50).copy()
-        display_df['SBU'] = display_df['sbu_list'].apply(lambda x: x[0] if len(x) > 0 else 'N/A')
-        display_df['Competitor'] = display_df['competitor_list'].apply(lambda x: x[0] if len(x) > 0 else 'N/A')
-        display_df['Date'] = display_df['publishedate'].dt.strftime('%m/%d/%Y')
-        
-        # Remove Keyword column
-        table_df = display_df[['newstitle', 'SBU', 'Competitor', 'source', 'Date']]
-        table_df.columns = ['Title', 'SBU', 'Competitor', 'Source', 'Date']
-        
-        # Apply powder blue alternating row styling using Pandas Styler (includes index)
-        def style_all_including_index(row):
-            """Style all columns including the index"""
-            if row.name % 2 == 0:
-                return ['background-color: #e3f2fd'] * len(row)
-            else:
-                return ['background-color: #f5f9ff'] * len(row)
-        
-        styled_df = table_df.style.apply(style_all_including_index, axis=1)
-        styled_df.index.name = None  # Remove index name if present
-        
-        st.dataframe(styled_df, use_container_width=True, height=400)
-    else:
-        st.info("No articles match your filters")
-    
-    # Charts
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    chart_cols = st.columns(2)
-    
-    with chart_cols[0]:
-        if len(filtered_df) > 0:
-            date_counts = filtered_df.groupby(filtered_df['publishedate'].dt.date).size().reset_index()
-            date_counts.columns = ['Date', 'Count']
-            date_counts = date_counts.sort_values('Date')
-            
-            fig_date = px.line(date_counts, x='Date', y='Count', 
-                              markers=True,
-                              color_discrete_sequence=['#1976d2'])
-            fig_date.update_traces(fill='tozeroy', fillcolor='rgba(25, 118, 210, 0.2)')
-            fig_date.update_layout(
-                showlegend=False,
-                height=300,
-                margin=dict(l=0, r=0, t=0, b=0),
-                plot_bgcolor='rgba(0,0,0,0)',
-                paper_bgcolor='rgba(0,0,0,0)'
-            )
-            st.plotly_chart(fig_date, use_container_width=True)
-    
-    with chart_cols[1]:
-        if len(filtered_df) > 0:
-            keyword_counts = filtered_df['keyword'].value_counts().head(10).reset_index()
-            keyword_counts.columns = ['Keyword', 'Count']
-            
-            fig_keywords = px.bar(keyword_counts, y='Keyword', x='Count',
-                                 orientation='h',
-                                 color_discrete_sequence=['#2196f3'])
-            fig_keywords.update_layout(
-                showlegend=False,
-                height=300,
-                margin=dict(l=0, r=0, t=0, b=0),
-                plot_bgcolor='rgba(0,0,0,0)',
-                paper_bgcolor='rgba(0,0,0,0)',
-                yaxis={'categoryorder': 'total ascending'}
-            )
-            st.plotly_chart(fig_keywords, use_container_width=True)
-    
-    chart_cols2 = st.columns(2)
-    
-    with chart_cols2[0]:
-        if len(filtered_df) > 0:
-            sbu_counts = {}
-            for sbu_list in filtered_df['sbu_list']:
-                for sbu in sbu_list:
-                    sbu_counts[sbu] = sbu_counts.get(sbu, 0) + 1
-            
-            if sbu_counts:
-                sbu_df = pd.DataFrame(list(sbu_counts.items()), columns=['SBU', 'Count'])
-                
-                fig_sbu = px.pie(sbu_df, values='Count', names='SBU',
-                                color_discrete_sequence=['#1976d2', '#2196f3', '#42a5f5', '#64b5f6', '#90caf9', '#bbdefb', '#1565c0'])
-                fig_sbu.update_layout(
-                    height=300,
-                    margin=dict(l=0, r=0, t=0, b=0),
-                    plot_bgcolor='rgba(0,0,0,0)',
-                    paper_bgcolor='rgba(0,0,0,0)'
-                )
-                st.plotly_chart(fig_sbu, use_container_width=True)
-    
-    with chart_cols2[1]:
-        if len(filtered_df) > 0:
-            comp_counts = {}
-            for comp_list in filtered_df['competitor_list']:
-                for comp in comp_list:
-                    comp_counts[comp] = comp_counts.get(comp, 0) + 1
-            
-            if comp_counts:
-                comp_df = pd.DataFrame(list(comp_counts.items()), columns=['Competitor', 'Count'])
-                comp_df = comp_df.sort_values('Count', ascending=False).head(10)
-                
-                fig_comp = px.bar(comp_df, y='Competitor', x='Count',
-                                 orientation='h',
-                                 color_discrete_sequence=['#1e88e5'])
-                fig_comp.update_layout(
-                    showlegend=False,
-                    height=300,
-                    margin=dict(l=0, r=0, t=0, b=0),
-                    plot_bgcolor='rgba(0,0,0,0)',
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    yaxis={'categoryorder': 'total ascending'}
-                )
-                st.plotly_chart(fig_comp, use_container_width=True)
-    
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    st.markdown("---")
-    
-    if st.session_state.raw_data is not None:
-        st.markdown('<div class="sync-status"><span class="sync-indicator"></span>Data Synced</div>', unsafe_allow_html=True)
+    st.markdown('<div class=""sync-status""><span class=""sync-indicator""></span>Data Synced</div>', unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)"
