@@ -298,11 +298,14 @@ if 'raw_data' not in st.session_state:
 if 'filtered_data' not in st.session_state:
     st.session_state.filtered_data = None
 
-# Header with blue band
+# Header with blue band and logo
 st.markdown("""
 <div class="blue-header-band">
     <div class="header-content">
         <div class="header-left">
+            <div class="logo-container">
+                <img src="https://i.imgur.com/8YqE9Xh.png" alt="KEC Logo">
+            </div>
             <div class="header-text">
                 <h1 class="header-title">KEC Competitor Intelligence Dashboard</h1>
                 <p class="header-caption">Competition & industry updates</p>
@@ -311,6 +314,13 @@ st.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
+
+# File uploader in bottom right corner
+st.markdown('<div class="upload-container">', unsafe_allow_html=True)
+uploaded_file = st.file_uploader("Browse for files", type=['xlsx', 'xls'])
+if st.session_state.raw_data is not None:
+    st.markdown('<div class="sync-status"><span class="sync-indicator"></span>Synced</div>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
 # Process uploaded file
 if uploaded_file is not None:
