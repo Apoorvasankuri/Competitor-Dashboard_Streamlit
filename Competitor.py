@@ -178,13 +178,13 @@ st.markdown("""
     }
     
     [data-testid="stDataFrame"] tbody tr:nth-child(even) {
-        background-color: #b3d9ff !important;
-    }
-    
-    [data-testid="stDataFrame"] tbody tr:nth-child(odd) {
-        background-color: white !important;
-    }
-    
+    background-color: #e3f2fd !important;  /* Powder Blue */
+}
+
+[data-testid="stDataFrame"] tbody tr:nth-child(odd) {
+    background-color: #f5f9ff !important;  /* Very Light Powder Blue */
+}
+
     /* Badge styling */
     .badge {
         display: inline-block;
