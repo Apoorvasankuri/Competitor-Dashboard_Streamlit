@@ -463,7 +463,7 @@ if st.session_state.raw_data is not None:
                 st.plotly_chart(fig_comp, use_container_width=True)
 
 else:
-    st.info("👆 Upload an Excel file using the button below to get started")
+    st.info("Upload an Excel file using the button below to get started")
     st.markdown("""
     ### Expected Excel Format:
     Your Excel file should contain these columns:
