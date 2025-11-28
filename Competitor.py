@@ -1,4 +1,4 @@
-"import streamlit as st
+import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -6,13 +6,13 @@ from datetime import datetime
 
 # Page configuration
 st.set_page_config(
-    page_title=""KEC Competitor Intelligence Dashboard"",
-    page_icon=""📊"",
-    layout=""wide""
+    page_title="KEC Competitor Intelligence Dashboard",
+    page_icon="📊",
+    layout="wide"
 )
 
 # Custom CSS to match the desired design
-st.markdown(""""""
+st.markdown("""
 <style>
     /* Main theme colors */
     :root {
@@ -51,20 +51,20 @@ st.markdown(""""""
         font-size: 16px;
     }
     
-    [data-testid=""stFileUploader""] {
+    [data-testid="stFileUploader"] {
         width: auto;
     }
     
-    [data-testid=""stFileUploader""] section {
+    [data-testid="stFileUploader"] section {
         padding: 0;
         border: none;
     }
     
-    [data-testid=""stFileUploader""] section > div {
+    [data-testid="stFileUploader"] section > div {
         display: none;
     }
     
-    [data-testid=""stFileUploader""] button {
+    [data-testid="stFileUploader"] button {
         background: linear-gradient(135deg, #1976d2, #2196f3);
         color: white;
         border: none;
@@ -76,7 +76,7 @@ st.markdown(""""""
         transition: all 0.2s;
     }
     
-    [data-testid=""stFileUploader""] button:hover {
+    [data-testid="stFileUploader"] button:hover {
         background: linear-gradient(135deg, #1565c0, #1976d2);
         transform: translateY(-1px);
         box-shadow: 0 4px 8px rgba(25, 118, 210, 0.3);
@@ -177,11 +177,11 @@ st.markdown(""""""
         font-size: 13px;
     }
     
-    [data-testid=""stDataFrame""] tbody tr:nth-child(even) {
+    [data-testid="stDataFrame"] tbody tr:nth-child(even) {
     background-color: #e3f2fd !important;  /* Powder Blue */
 }
 
-[data-testid=""stDataFrame""] tbody tr:nth-child(odd) {
+[data-testid="stDataFrame"] tbody tr:nth-child(odd) {
     background-color: #f5f9ff !important;  /* Very Light Powder Blue */
 }
 
@@ -277,7 +277,7 @@ st.markdown(""""""
         margin-top: 24px !important;
     }
 </style>
-"""""", unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # Initialize session state
 if 'raw_data' not in st.session_state:
@@ -286,25 +286,25 @@ if 'filtered_data' not in st.session_state:
     st.session_state.filtered_data = None
 
 # Header WITHOUT logo
-st.markdown(""""""
-<div class=""blue-header-band"">
-    <div class=""header-content"">
-        <div class=""header-left"">
-            <div class=""header-text"">
-                <h1 class=""header-title"">KEC Competitor Intelligence Dashboard</h1>
-                <p class=""header-caption"">Competition & industry updates</p>
+st.markdown("""
+<div class="blue-header-band">
+    <div class="header-content">
+        <div class="header-left">
+            <div class="header-text">
+                <h1 class="header-title">KEC Competitor Intelligence Dashboard</h1>
+                <p class="header-caption">Competition & industry updates</p>
             </div>
         </div>
     </div>
 </div>
-"""""", unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # Main dashboard
 if st.session_state.raw_data is not None:
     df = st.session_state.raw_data
     
     # Filters section
-    st.markdown('<div class=""filter-container"">', unsafe_allow_html=True)
+    st.markdown('<div class="filter-container">', unsafe_allow_html=True)
     filter_cols = st.columns(5)
     
     with filter_cols[0]:
@@ -312,26 +312,26 @@ if st.session_state.raw_data is not None:
         all_sbus = set()
         for sbu_list in df['sbu_list']:
             all_sbus.update(sbu_list)
-        sbu_filter = st.selectbox(""SBU"", [""All SBUs""] + sorted(list(all_sbus)))
+        sbu_filter = st.selectbox("SBU", ["All SBUs"] + sorted(list(all_sbus)))
     
     with filter_cols[1]:
         # Get unique competitors
         all_competitors = set()
         for comp_list in df['competitor_list']:
             all_competitors.update(comp_list)
-        competitor_filter = st.selectbox(""Competitor"", [""All Competitors""] + sorted(list(all_competitors)))
+        competitor_filter = st.selectbox("Competitor", ["All Competitors"] + sorted(list(all_competitors)))
     
     with filter_cols[2]:
-        keyword_filter = st.text_input(""Keyword"", placeholder=""Search keywords..."")
+        keyword_filter = st.text_input("Keyword", placeholder="Search keywords...")
     
     with filter_cols[3]:
         all_sources = df['source'].unique().tolist()
-        source_filter = st.selectbox(""Source"", [""All Sources""] + sorted(all_sources))
+        source_filter = st.selectbox("Source", ["All Sources"] + sorted(all_sources))
     
     with filter_cols[4]:
-        st.write("""")
-        st.write("""")
-        if st.button(""Reset Filters"", use_container_width=True):
+        st.write("")
+        st.write("")
+        if st.button("Reset Filters", use_container_width=True):
             st.rerun()
     
     st.markdown('</div>', unsafe_allow_html=True)
@@ -339,21 +339,21 @@ if st.session_state.raw_data is not None:
     # Apply filters
     filtered_df = df.copy()
     
-    if sbu_filter != ""All SBUs"":
+    if sbu_filter != "All SBUs":
         filtered_df = filtered_df[filtered_df['sbu_list'].apply(lambda x: sbu_filter in x)]
     
-    if competitor_filter != ""All Competitors"":
+    if competitor_filter != "All Competitors":
         filtered_df = filtered_df[filtered_df['competitor_list'].apply(lambda x: competitor_filter in x)]
     
     if keyword_filter:
         filtered_df = filtered_df[filtered_df['keyword'].str.contains(keyword_filter, case=False, na=False)]
     
-    if source_filter != ""All Sources"":
+    if source_filter != "All Sources":
         filtered_df = filtered_df[filtered_df['source'] == source_filter]
     
     st.session_state.filtered_data = filtered_df
     
-    st.markdown(""<br>"", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
     
     # KPI Cards
     kpi_cols = st.columns(4)
@@ -363,54 +363,54 @@ if st.session_state.raw_data is not None:
         if len(filtered_df) > 0:
             min_date = filtered_df['publishedate'].min().strftime('%m/%d/%Y')
             max_date = filtered_df['publishedate'].max().strftime('%m/%d/%Y')
-            date_range = f""{min_date} to {max_date}""
+            date_range = f"{min_date} to {max_date}"
         else:
-            date_range = ""No data""
+            date_range = "No data"
         
-        st.markdown(f""""""
-        <div class=""kpi-card"">
-            <div class=""kpi-label"">Total Articles</div>
-            <div class=""kpi-value"">{total_articles:,}</div>
-            <div class=""kpi-subtext"">{date_range}</div>
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">Total Articles</div>
+            <div class="kpi-value">{total_articles:,}</div>
+            <div class="kpi-subtext">{date_range}</div>
         </div>
-        """""", unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
     
     with kpi_cols[1]:
         unique_keywords = filtered_df['keyword'].nunique()
-        st.markdown(f""""""
-        <div class=""kpi-card"">
-            <div class=""kpi-label"">Unique Keywords</div>
-            <div class=""kpi-value"">{unique_keywords}</div>
-            <div class=""kpi-subtext"">Keywords tracked</div>
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">Unique Keywords</div>
+            <div class="kpi-value">{unique_keywords}</div>
+            <div class="kpi-subtext">Keywords tracked</div>
         </div>
-        """""", unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
     
     with kpi_cols[2]:
         all_comps = set()
         for comp_list in filtered_df['competitor_list']:
             all_comps.update(comp_list)
         competitors_mentioned = len(all_comps)
-        st.markdown(f""""""
-        <div class=""kpi-card"">
-            <div class=""kpi-label"">Competitors Mentioned</div>
-            <div class=""kpi-value"">{competitors_mentioned}</div>
-            <div class=""kpi-subtext"">Active in period</div>
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">Competitors Mentioned</div>
+            <div class="kpi-value">{competitors_mentioned}</div>
+            <div class="kpi-subtext">Active in period</div>
         </div>
-        """""", unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
     
     with kpi_cols[3]:
         news_sources = filtered_df['source'].nunique()
-        st.markdown(f""""""
-        <div class=""kpi-card"">
-            <div class=""kpi-label"">News Sources</div>
-            <div class=""kpi-value"">{news_sources}</div>
-            <div class=""kpi-subtext"">Media channels</div>
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">News Sources</div>
+            <div class="kpi-value">{news_sources}</div>
+            <div class="kpi-subtext">Media channels</div>
         </div>
-        """""", unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
     
     # Recent Articles Table
-    st.markdown(""<br><br>"", unsafe_allow_html=True)
-    st.markdown(""### 📰 Recent Articles"")
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    st.markdown("### 📰 Recent Articles")
     
     if len(filtered_df) > 0:
         display_df = filtered_df.head(50).copy()
@@ -424,15 +424,15 @@ if st.session_state.raw_data is not None:
         
         st.dataframe(table_df, use_container_width=True, height=400)
     else:
-        st.info(""No articles match your filters"")
+        st.info("No articles match your filters")
     
     # Charts
-    st.markdown(""<br><br>"", unsafe_allow_html=True)
+    st.markdown("<br><br>", unsafe_allow_html=True)
     chart_cols = st.columns(2)
     
     with chart_cols[0]:
-        #st.markdown('<div class=""chart-container"">', unsafe_allow_html=True)
-        st.markdown(""#### 📅 Articles by Date"")
+        #st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+        st.markdown("#### 📅 Articles by Date")
         
         if len(filtered_df) > 0:
             date_counts = filtered_df.groupby(filtered_df['publishedate'].dt.date).size().reset_index()
@@ -454,8 +454,8 @@ if st.session_state.raw_data is not None:
         st.markdown('</div>', unsafe_allow_html=True)
     
     with chart_cols[1]:
-        #st.markdown('<div class=""chart-container"">', unsafe_allow_html=True)
-        st.markdown(""#### 🔑 Top Keywords"")
+        #st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+        st.markdown("#### 🔑 Top Keywords")
         
         if len(filtered_df) > 0:
             keyword_counts = filtered_df['keyword'].value_counts().head(10).reset_index()
@@ -478,8 +478,8 @@ if st.session_state.raw_data is not None:
     chart_cols2 = st.columns(2)
     
     with chart_cols2[0]:
-        #st.markdown('<div class=""chart-container"">', unsafe_allow_html=True)
-        st.markdown(""#### 🏢 Articles by SBU"")
+        #st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+        st.markdown("#### 🏢 Articles by SBU")
         
         if len(filtered_df) > 0:
             sbu_counts = {}
@@ -502,8 +502,8 @@ if st.session_state.raw_data is not None:
         st.markdown('</div>', unsafe_allow_html=True)
     
     with chart_cols2[1]:
-        #st.markdown('<div class=""chart-container"">', unsafe_allow_html=True)
-        st.markdown(""#### 👥 Top Competitors Mentioned"")
+        #st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+        st.markdown("#### 👥 Top Competitors Mentioned")
         
         if len(filtered_df) > 0:
             comp_counts = {}
@@ -530,8 +530,8 @@ if st.session_state.raw_data is not None:
         st.markdown('</div>', unsafe_allow_html=True)
 
 else:
-    st.info("" Upload an Excel file using the button below to get started"")
-    st.markdown(""""""
+    st.info(" Upload an Excel file using the button below to get started")
+    st.markdown("""
     ### Expected Excel Format:
     Your Excel file should contain these columns:
     - **keyword**: The search keyword or topic
@@ -540,17 +540,17 @@ else:
     - **Competitor**: Competitor names (comma-separated if multiple)
     - **publishedate**: Publication date
     - **source**: News source/publication
-    """""")
+    """)
 
 # ═════════════════════════════════════════════════════════════════
 # FILE UPLOADER AT BOTTOM (ALWAYS VISIBLE)
 # ═════════════════════════════════════════════════════════════════
-st.markdown(""<br><br>"", unsafe_allow_html=True)
-st.markdown(""---"")
-#st.markdown('<div class=""upload-container"">', unsafe_allow_html=True)
+st.markdown("<br><br>", unsafe_allow_html=True)
+st.markdown("---")
+#st.markdown('<div class="upload-container">', unsafe_allow_html=True)
 #st.markdown('<h4>📁 Upload Competitor Data</h4>', unsafe_allow_html=True)
 
-uploaded_file = st.file_uploader(""Browse for files"", type=['xlsx', 'xls'])
+uploaded_file = st.file_uploader("Browse for files", type=['xlsx', 'xls'])
 
 if uploaded_file is not None:
     try:
@@ -577,13 +577,13 @@ if uploaded_file is not None:
         st.session_state.raw_data = pd.DataFrame(processed_data)
         st.session_state.filtered_data = st.session_state.raw_data.copy()
         
-        st.success(f""✅ File uploaded successfully! {len(processed_data)} articles loaded."")
+        st.success(f"✅ File uploaded successfully! {len(processed_data)} articles loaded.")
         st.rerun()
         
     except Exception as e:
-        st.error(f""Error loading file: {str(e)}"")
+        st.error(f"Error loading file: {str(e)}")
 
 if st.session_state.raw_data is not None:
-    st.markdown('<div class=""sync-status""><span class=""sync-indicator""></span>Data Synced</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sync-status"><span class="sync-indicator"></span>Data Synced</div>', unsafe_allow_html=True)
 
-st.markdown('</div>', unsafe_allow_html=True)"
+st.markdown('</div>', unsafe_allow_html=True)
