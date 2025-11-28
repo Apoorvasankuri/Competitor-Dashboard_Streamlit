@@ -530,7 +530,7 @@ if st.session_state.raw_data is not None:
         st.markdown('</div>', unsafe_allow_html=True)
 
 else:
-    st.info("👆 Upload an Excel file using the button below to get started")
+    st.info(" Upload an Excel file using the button below to get started")
     st.markdown("""
     ### Expected Excel Format:
     Your Excel file should contain these columns:
