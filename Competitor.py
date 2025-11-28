@@ -303,9 +303,6 @@ st.markdown("""
 <div class="blue-header-band">
     <div class="header-content">
         <div class="header-left">
-            <div class="logo-container">
-                <img src="https://i.imgur.com/8YqE9Xh.png" alt="KEC Logo">
-            </div>
             <div class="header-text">
                 <h1 class="header-title">KEC Competitor Intelligence Dashboard</h1>
                 <p class="header-caption">Competition & industry updates</p>
