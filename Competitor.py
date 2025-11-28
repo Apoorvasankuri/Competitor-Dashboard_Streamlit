@@ -34,17 +34,22 @@ st.markdown("""
     footer {visibility: hidden;}
     header {visibility: hidden;}
     
-    /* File uploader styling - moved to bottom right */
+    /* File uploader styling - moved to bottom of page */
     .upload-container {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        z-index: 999;
-        background: white;
-        padding: 16px;
+        margin-top: 60px;
+        margin-bottom: 40px;
+        padding: 20px;
+        background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);
+        border: 2px solid #90caf9;
         border-radius: 12px;
-        box-shadow: 0 8px 24px rgba(21, 101, 192, 0.3);
-        border: 2px solid #2196f3;
+        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.15);
+    }
+    
+    .upload-container h4 {
+        color: #1565c0;
+        font-weight: 700;
+        margin-bottom: 12px;
+        font-size: 16px;
     }
     
     [data-testid="stFileUploader"] {
@@ -293,14 +298,11 @@ if 'raw_data' not in st.session_state:
 if 'filtered_data' not in st.session_state:
     st.session_state.filtered_data = None
 
-# Header with blue band and logo
+# Header with blue band
 st.markdown("""
 <div class="blue-header-band">
     <div class="header-content">
         <div class="header-left">
-            <div class="logo-container">
-                <img src="https://i.imgur.com/8YqE9Xh.png" alt="KEC Logo">
-            </div>
             <div class="header-text">
                 <h1 class="header-title">KEC Competitor Intelligence Dashboard</h1>
                 <p class="header-caption">Competition & industry updates</p>
@@ -309,13 +311,6 @@ st.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
-
-# File uploader in bottom right corner
-st.markdown('<div class="upload-container">', unsafe_allow_html=True)
-uploaded_file = st.file_uploader("Browse for files", type=['xlsx', 'xls'])
-if st.session_state.raw_data is not None:
-    st.markdown('<div class="sync-status"><span class="sync-indicator"></span>Synced</div>', unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
 
 # Process uploaded file
 if uploaded_file is not None:
@@ -577,7 +572,7 @@ if st.session_state.raw_data is not None:
         st.markdown('</div>', unsafe_allow_html=True)
 
 else:
-    st.info("👆 Upload an Excel file using the button in the bottom right to get started")
+    st.info("👆 Upload an Excel file using the button at the bottom of the page to get started")
     st.markdown("""
     ### Expected Excel Format:
     Your Excel file should contain these columns:
@@ -588,3 +583,12 @@ else:
     - **publishedate**: Publication date
     - **source**: News source/publication
     """)
+
+# File uploader at the bottom of the page
+st.markdown("<br><br>", unsafe_allow_html=True)
+st.markdown('<div class="upload-container">', unsafe_allow_html=True)
+st.markdown("#### 📁 Upload Data File")
+uploaded_file = st.file_uploader("Browse for Excel files", type=['xlsx', 'xls'])
+if st.session_state.raw_data is not None:
+    st.markdown('<div class="sync-status"><span class="sync-indicator"></span>Data Synced Successfully</div>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
