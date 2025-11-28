@@ -239,11 +239,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ═════════════════════════════════════════════════════════════════
-# FILE UPLOADER AT TOP (ALWAYS VISIBLE)
+# FILE UPLOADER - WILL BE MOVED TO BOTTOM
 # ═════════════════════════════════════════════════════════════════
-st.markdown("<br>", unsafe_allow_html=True)
-
-uploaded_file = st.file_uploader("Upload Excel file with competitor data", type=['xlsx', 'xls'])
+uploaded_file = st.file_uploader("Upload Excel file with competitor data", type=['xlsx', 'xls'], key="file_uploader_top")
 
 if uploaded_file is not None:
     try:
