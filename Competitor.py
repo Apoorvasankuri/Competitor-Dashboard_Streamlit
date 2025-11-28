@@ -431,7 +431,7 @@ if st.session_state.raw_data is not None:
     chart_cols = st.columns(2)
     
     with chart_cols[0]:
-        st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+        #st.markdown('<div class="chart-container">', unsafe_allow_html=True)
         st.markdown("#### 📅 Articles by Date")
         
         if len(filtered_df) > 0:
@@ -454,7 +454,7 @@ if st.session_state.raw_data is not None:
         st.markdown('</div>', unsafe_allow_html=True)
     
     with chart_cols[1]:
-        st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+        #st.markdown('<div class="chart-container">', unsafe_allow_html=True)
         st.markdown("#### 🔑 Top Keywords")
         
         if len(filtered_df) > 0:
@@ -478,7 +478,7 @@ if st.session_state.raw_data is not None:
     chart_cols2 = st.columns(2)
     
     with chart_cols2[0]:
-        st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+        #st.markdown('<div class="chart-container">', unsafe_allow_html=True)
         st.markdown("#### 🏢 Articles by SBU")
         
         if len(filtered_df) > 0:
@@ -502,7 +502,7 @@ if st.session_state.raw_data is not None:
         st.markdown('</div>', unsafe_allow_html=True)
     
     with chart_cols2[1]:
-        st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+        #st.markdown('<div class="chart-container">', unsafe_allow_html=True)
         st.markdown("#### 👥 Top Competitors Mentioned")
         
         if len(filtered_df) > 0:
