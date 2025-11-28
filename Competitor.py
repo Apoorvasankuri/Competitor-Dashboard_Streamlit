@@ -572,7 +572,7 @@ if st.session_state.raw_data is not None:
         st.markdown('</div>', unsafe_allow_html=True)
 
 else:
-    st.info("👆 Upload an Excel file using the button at the bottom of the page to get started")
+    st.info("👆 Upload an Excel file using the button in the bottom right to get started")
     st.markdown("""
     ### Expected Excel Format:
     Your Excel file should contain these columns:
@@ -583,12 +583,3 @@ else:
     - **publishedate**: Publication date
     - **source**: News source/publication
     """)
-
-# File uploader at the bottom of the page
-st.markdown("<br><br>", unsafe_allow_html=True)
-st.markdown('<div class="upload-container">', unsafe_allow_html=True)
-st.markdown("#### 📁 Upload Data File")
-uploaded_file = st.file_uploader("Browse for Excel files", type=['xlsx', 'xls'])
-if st.session_state.raw_data is not None:
-    st.markdown('<div class="sync-status"><span class="sync-indicator"></span>Data Synced Successfully</div>', unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
